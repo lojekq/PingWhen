@@ -44,17 +44,18 @@ or in a fullscreen game. Your AI agents get the same engine: "Claude finished" a
 
 ## Download
 
-1. Get **`PingWhen-x.y.z-win-x64.exe`** from [Releases](https://github.com/lojekq/PingWhen/releases/latest). Single file, no install, no admin.
-2. Smaller build: `PingWhen-x.y.z-win-x64-fd.zip` (needs [.NET Desktop Runtime 10](https://dotnet.microsoft.com/download/dotnet/10.0)).
+1. **[Download PingWhen.exe](https://github.com/lojekq/PingWhen/releases/latest/download/PingWhen.exe)** (latest release). One file, no admin rights.
+2. Smaller build: [`PingWhen-fd.zip`](https://github.com/lojekq/PingWhen/releases/latest/download/PingWhen-fd.zip) (needs [.NET Desktop Runtime 10](https://dotnet.microsoft.com/download/dotnet/10.0)).
 3. Optional check: `gh attestation verify <file> -R lojekq/PingWhen` or compare with `SHA256SUMS.txt`.
 
 Requirements: Windows 11 x64. Windows 10 22H2 should work but is not tested.
 
 ## First run
 
-1. Put the exe into a permanent folder: `%LOCALAPPDATA%\Programs\PingWhen\`. Autostart, the Start menu shortcut and the agent commands point to it.
-2. Start it. Windows may show a SmartScreen warning (see FAQ). PingWhen lives in the tray; turn on **Start with Windows** in Settings.
-3. Press `Ctrl+Alt+W` in the window you want to watch, or use **Tell me when…** in the tray menu.
+1. Run the downloaded exe from anywhere. Windows may show a SmartScreen warning first (see FAQ).
+2. PingWhen offers to install itself: **Install** copies it to `%LOCALAPPDATA%\Programs\PingWhen\PingWhen.exe`, adds a Start menu shortcut, autostart and an entry in Settings → Apps; no admin rights. The agent commands point there.
+   **Run without installing** keeps it portable. To update, run a newer exe the same way: it closes the running PingWhen, replaces the installed one and starts it.
+3. PingWhen lives in the tray. Press `Ctrl+Alt+W` in the window you want to watch, or use **Tell me when…** in the tray menu.
 
 **Phone (Telegram, two minutes).** In Telegram open [@BotFather](https://t.me/BotFather), send `/newbot`, pick a name and a username, copy the token.
 In PingWhen: Settings → Telegram → paste the token → **Check** → **Pair** → **Open in Telegram** → **Start** (or send the 8-character code to the bot from your phone).
@@ -114,7 +115,9 @@ The phone channel is your own bot: PingWhen calls the Bot API directly, pairs wi
 | Claude's reply on the phone | off | Agents page: the first 150 characters of Claude's last message in the "finished" message |
 | "Claude finished" only after turns of at least | 0 s | Agents page: skip short turns (needs the `UserPromptSubmit` hook) |
 | Language, theme | Windows | English or Russian (after a restart), light or dark |
-| Start with Windows, Start menu shortcut | off; on when the exe is in `%LOCALAPPDATA%\Programs\PingWhen\` | Starts in the tray |
+| Start with Windows | on after install | Starts in the tray |
+| Start menu shortcut | on after install | A shortcut in the Start menu |
+| Installation | — | Install, or Uninstall when installed |
 | Check for updates | on | Once a day asks GitHub about a new release, downloads nothing |
 
 Per watcher: **Route** Auto / PC only / Phone only / PC and phone, **Don't let the PC sleep while waiting**, **Wait for child processes too** (installers), **Every time**, **Screenshot of the window in the notification** (off; in the toast, on the phone only with "Screenshots to the phone"), **Tell me if it is not done within N minutes**. Tray: **Do not disturb for 1 h** mutes the phone, toasts stay.
@@ -131,7 +134,7 @@ Smart App Control, if it is on, blocks unsigned files with no way to allow one; 
 
 <details><summary>My antivirus flags it</summary>
 
-It is a false positive: no installer, no packer, no injection or keyboard hooks (the hotkey is `RegisterHotKey`). It reads other processes' names and exit codes, which some heuristics dislike.
+It is a false positive: no packer, no injection or keyboard hooks, it installs only into your user folder (the hotkey is `RegisterHotKey`). It reads other processes' names and exit codes, which some heuristics dislike.
 Please report it to your antivirus vendor and open an issue with the detection name and the SHA256 of the file.
 </details>
 
@@ -163,12 +166,14 @@ Pairing reads the bot's updates, which only one program at a time can do. Use on
 
 <details><summary>Updating while agents are connected</summary>
 
-`--mcp` relays keep the exe busy. Close the agent sessions, or rename the old exe (Windows allows it for a running file) and put the new one next to it.
+Just run the newer exe: the installed one is moved aside even while `--mcp` relays use it, and agents get the new version with their next session.
 </details>
 
 <details><summary>How do I uninstall?</summary>
 
-Remove the `pingwhen` MCP server (`claude mcp remove pingwhen`) and the hooks, then About → **Remove data and autostart**, then delete the exe.
+Settings → **Uninstall**, or Windows Settings → Apps → PingWhen → Uninstall. You choose whether settings and logs go too.
+PingWhen does not edit Claude Code's files: remove the MCP server yourself (`claude mcp remove pingwhen`) and the PingWhen hooks from `~/.claude/settings.json`.
+Without installing: About → **Remove data and autostart**, then delete the exe.
 </details>
 
 ## Privacy

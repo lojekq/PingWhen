@@ -39,6 +39,28 @@
 Crash log: {1}
 
 Open the folder?</value></data>
+  <data name="Install.Ask" xml:space="preserve"><value>Install {0}?
+
+It will be copied to {1} and get a Start menu shortcut and an entry in Settings → Apps. No administrator rights needed.</value></data>
+  <data name="Install.Button" xml:space="preserve"><value>Install</value></data>
+  <data name="Install.NoInstall" xml:space="preserve"><value>Run without installing</value></data>
+  <data name="Install.Update" xml:space="preserve"><value>Update {0} {1} → {2}?
+
+The running copy closes and starts again.</value></data>
+  <data name="Install.UpdateButton" xml:space="preserve"><value>Update</value></data>
+  <data name="Install.CloseRunning" xml:space="preserve"><value>{0} is still running. Close it in the tray: right-click the icon → Exit, then press Retry.</value></data>
+  <data name="Install.Retry" xml:space="preserve"><value>Retry</value></data>
+  <data name="Install.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Uninstall.Ask" xml:space="preserve"><value>Uninstall {0}?
+
+The program, its Start menu shortcut, autostart and the entry in Settings → Apps will be removed.</value></data>
+  <data name="Uninstall.Data" xml:space="preserve"><value>Also delete settings and logs</value></data>
+  <data name="Uninstall.Button" xml:space="preserve"><value>Uninstall</value></data>
+  <data name="Uninstall.Done" xml:space="preserve"><value>{0} is uninstalled.</value></data>
+  <data name="Uninstall.Leftover" xml:space="preserve"><value>Some files are in use and stayed in {0}. Delete the folder later.</value></data>
+  <data name="Settings.Install" xml:space="preserve"><value>Installation</value></data>
+  <data name="Settings.Installed" xml:space="preserve"><value>Installed in {0}</value></data>
+  <data name="Settings.NotInstalled" xml:space="preserve"><value>Runs without installing, from {0}</value></data>
   <data name="Hotkey.Placeholder" xml:space="preserve"><value>Press a key combination</value></data>
   <data name="Hotkey.Busy" xml:space="preserve"><value>Taken by another program</value></data>
   <data name="Hotkey.Failed" xml:space="preserve"><value>Could not register</value></data>
@@ -162,8 +184,8 @@ Open the folder?</value></data>
   <data name="New.Error.NoFile" xml:space="preserve"><value>The file doesn't exist.</value></data>
   <data name="New.Error.Pattern" xml:space="preserve"><value>Enter the text to look for.</value></data>
   <data name="Agents.Subtitle" xml:space="preserve"><value>Claude Code and other MCP clients use the same watchers through PingWhen.exe --mcp; hooks bring "Claude finished" and "needs your answer" to your phone.</value></data>
-  <data name="Agents.Move.Title" xml:space="preserve"><value>Move PingWhen.exe to a permanent folder</value></data>
-  <data name="Agents.Move.Message" xml:space="preserve"><value>Put it in %LOCALAPPDATA%\Programs\PingWhen\ first, otherwise the command below breaks when the exe moves.</value></data>
+  <data name="Agents.Move.Title" xml:space="preserve"><value>PingWhen is not installed</value></data>
+  <data name="Agents.Move.Message" xml:space="preserve"><value>The commands below point to %LOCALAPPDATA%\Programs\PingWhen\PingWhen.exe. Install PingWhen in Settings, otherwise agents cannot start it.</value></data>
   <data name="Agents.Sessions" xml:space="preserve"><value>Connected sessions</value></data>
   <data name="Agents.PipeOn" xml:space="preserve"><value>Agent channel is up · connected: {0}</value></data>
   <data name="Agents.PipeOff" xml:space="preserve"><value>Agent channel is not running</value></data>
@@ -298,4 +320,5 @@ Process exited, code 0</value></data>
   <data name="Perm.Gone" xml:space="preserve"><value>This request is no longer active</value></data>
   <data name="Settings.PhoneShots" xml:space="preserve"><value>Screenshots to the phone</value></data>
   <data name="Settings.PhoneShots.Note" xml:space="preserve"><value>Off: pictures stay in toasts. On: watchers with a screenshot also send it through Telegram or ntfy servers, with whatever the window shows.</value></data>
+  <data name="Uninstall.Claude" xml:space="preserve"><value>PingWhen does not edit Claude Code's files. If you connected it, remove it there yourself: run "claude mcp remove pingwhen" and delete the PingWhen hooks from ~/.claude/settings.json. A Claude Code session that is still open keeps PingWhen.exe busy until it ends.</value></data>
 </root>

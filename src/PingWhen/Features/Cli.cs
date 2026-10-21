@@ -107,8 +107,9 @@ public static class Cli
             using var started = new EventWaitHandle(false, EventResetMode.ManualReset, StartEvent);
             if (!Mutex.TryOpenExisting($@"Local\lojekq.{AppInfo.Name}", out _))
             {
+                var exe = File.Exists(Install.Exe) ? Install.Exe : AppInfo.ExePath; // the installed copy when there is one
                 Log.Info("tray not running, starting it through explorer.exe");
-                try { Process.Start(new ProcessStartInfo("explorer.exe", $"\"{AppInfo.ExePath}\"") { UseShellExecute = false }); }
+                try { Process.Start(new ProcessStartInfo("explorer.exe", $"\"{exe}\"") { UseShellExecute = false }); }
                 catch (Exception e) { return Fail($"PingWhen: could not start the tray: {e.Message}"); }
             }
             pipe = TryConnect((int)wait.TotalMilliseconds);

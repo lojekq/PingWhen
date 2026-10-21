@@ -39,6 +39,28 @@
 Лог ошибки: {1}
 
 Открыть папку?</value></data>
+  <data name="Install.Ask" xml:space="preserve"><value>Установить {0}?
+
+Программа будет скопирована в {1}, появятся ярлык в «Пуске» и запись в «Параметры → Приложения». Права администратора не нужны.</value></data>
+  <data name="Install.Button" xml:space="preserve"><value>Установить</value></data>
+  <data name="Install.NoInstall" xml:space="preserve"><value>Без установки</value></data>
+  <data name="Install.Update" xml:space="preserve"><value>Обновить {0} {1} → {2}?
+
+Работающая копия закроется и запустится снова.</value></data>
+  <data name="Install.UpdateButton" xml:space="preserve"><value>Обновить</value></data>
+  <data name="Install.CloseRunning" xml:space="preserve"><value>{0} ещё работает. Закройте программу в трее: правый клик по значку → «Выход», затем нажмите «Повторить».</value></data>
+  <data name="Install.Retry" xml:space="preserve"><value>Повторить</value></data>
+  <data name="Install.Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Uninstall.Ask" xml:space="preserve"><value>Удалить {0}?
+
+Будут удалены программа, ярлык в «Пуске», автозапуск и запись в «Параметры → Приложения».</value></data>
+  <data name="Uninstall.Data" xml:space="preserve"><value>Удалить также настройки и логи</value></data>
+  <data name="Uninstall.Button" xml:space="preserve"><value>Удалить</value></data>
+  <data name="Uninstall.Done" xml:space="preserve"><value>Программа {0} удалена.</value></data>
+  <data name="Uninstall.Leftover" xml:space="preserve"><value>Часть файлов занята и осталась в {0}. Удалите папку позже.</value></data>
+  <data name="Settings.Install" xml:space="preserve"><value>Установка</value></data>
+  <data name="Settings.Installed" xml:space="preserve"><value>Установлена в {0}</value></data>
+  <data name="Settings.NotInstalled" xml:space="preserve"><value>Работает без установки, из {0}</value></data>
   <data name="Hotkey.Placeholder" xml:space="preserve"><value>Нажмите сочетание клавиш</value></data>
   <data name="Hotkey.Busy" xml:space="preserve"><value>Занято другой программой</value></data>
   <data name="Hotkey.Failed" xml:space="preserve"><value>Не удалось зарегистрировать</value></data>
@@ -162,8 +184,8 @@
   <data name="New.Error.NoFile" xml:space="preserve"><value>Такого файла нет.</value></data>
   <data name="New.Error.Pattern" xml:space="preserve"><value>Укажи текст для поиска.</value></data>
   <data name="Agents.Subtitle" xml:space="preserve"><value>Claude Code и другие MCP-клиенты пользуются теми же наблюдателями через PingWhen.exe --mcp; хуки присылают «Claude закончил» и «нужен ответ» на телефон.</value></data>
-  <data name="Agents.Move.Title" xml:space="preserve"><value>Перенеси PingWhen.exe в постоянную папку</value></data>
-  <data name="Agents.Move.Message" xml:space="preserve"><value>Сначала положи его в %LOCALAPPDATA%\Programs\PingWhen\, иначе команда ниже сломается, когда exe переедет.</value></data>
+  <data name="Agents.Move.Title" xml:space="preserve"><value>PingWhen не установлен</value></data>
+  <data name="Agents.Move.Message" xml:space="preserve"><value>Команды ниже указывают на %LOCALAPPDATA%\Programs\PingWhen\PingWhen.exe. Установи PingWhen в Настройках, иначе агенты не смогут его запустить.</value></data>
   <data name="Agents.Sessions" xml:space="preserve"><value>Подключённые сессии</value></data>
   <data name="Agents.PipeOn" xml:space="preserve"><value>Канал для агентов работает · подключено: {0}</value></data>
   <data name="Agents.PipeOff" xml:space="preserve"><value>Канал для агентов не запущен</value></data>
@@ -298,4 +320,5 @@
   <data name="Perm.Gone" xml:space="preserve"><value>Этот запрос уже не активен</value></data>
   <data name="Settings.PhoneShots" xml:space="preserve"><value>Скриншоты на телефон</value></data>
   <data name="Settings.PhoneShots.Note" xml:space="preserve"><value>Выключено — снимки остаются в тостах. Включено — наблюдатели со скриншотом отправляют его и через серверы Telegram или ntfy, со всем, что видно в окне.</value></data>
+  <data name="Uninstall.Claude" xml:space="preserve"><value>PingWhen не правит файлы Claude Code. Если ты его подключал, сними подключение сам: выполни «claude mcp remove pingwhen» и удали хуки PingWhen из ~/.claude/settings.json. Открытая сессия Claude Code держит PingWhen.exe занятым, пока не закончится.</value></data>
 </root>
