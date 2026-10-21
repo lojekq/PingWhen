@@ -17,6 +17,8 @@ namespace PingWhen.Shell
         public int AwayMinutes { get; set; } = 3;
         public bool PhoneWhenBusy { get; set; } = true;
         public bool ClaudeTextToPhone { get; set; }
+        /// <summary>Screenshots leave the PC only with this on (decision 18): a watcher's own tick only puts the picture in the toast.</summary>
+        public bool PhoneScreenshots { get; set; }
         public int StopMinSeconds { get; set; }   // v1.0: "Claude finished" only after turns this long (0 = every turn)
     }
 }
@@ -214,9 +216,16 @@ namespace PingWhen.Features
             if (Sink is not null) return Sink(n);
             var (pc, phone) = Router.Decide(n.Route, Router.Now());
             if (pc) Toast.Show(n);
-            if (phone) foreach (var p in phones) p.Box.Enqueue(n);
+            if (phone)
+            {
+                var forPhone = ForPhone(n);
+                foreach (var p in phones) p.Box.Enqueue(forPhone);
+            }
             return (pc, phone);
         }
+
+        /// <summary>The note as Telegram and ntfy get it: without the screenshot unless "Screenshots to the phone" is on.</summary>
+        internal static Note ForPhone(Note n) => n.ImagePath is not null && !Settings.Current.PhoneScreenshots ? n with { ImagePath = null } : n;
 
         /// <summary>A watcher fired: history + toast/phone. Lost and cancelled only go to history.</summary>
         public static void OnFired(Fire f)

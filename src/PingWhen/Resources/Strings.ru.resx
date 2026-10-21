@@ -270,8 +270,8 @@
   <data name="New.PickRegion" xml:space="preserve"><value>Выбрать область…</value></data>
   <data name="New.RegionWhole" xml:space="preserve"><value>всё окно</value></data>
   <data name="New.RegionPart" xml:space="preserve"><value>от {0}%, {1}% · {2}×{3}% окна</value></data>
-  <data name="New.Screenshot" xml:space="preserve"><value>Приложить скриншот окна</value></data>
-  <data name="New.Screenshot.Note" xml:space="preserve"><value>Снимок уйдёт в тост и через серверы Telegram или ntfy. JPEG до 300 КБ.</value></data>
+  <data name="New.Screenshot" xml:space="preserve"><value>Скриншот окна в уведомлении</value></data>
+  <data name="New.Screenshot.Note" xml:space="preserve"><value>В тосте на этом ПК. На телефон — только если в Настройках включено «Скриншоты на телефон».</value></data>
   <data name="Region.Title" xml:space="preserve"><value>Выбор области</value></data>
   <data name="Region.Hint" xml:space="preserve"><value>Обведи мышью часть окна: прогресс-бар, проценты, надпись «Готово». Потом окно можно перекрыть другими, но не сворачивать.</value></data>
   <data name="Region.Whole" xml:space="preserve"><value>Всё окно</value></data>
@@ -296,4 +296,6 @@
   <data name="Perm.Denied" xml:space="preserve"><value>Отклонено с телефона</value></data>
   <data name="Perm.Expired" xml:space="preserve"><value>Нет ответа — реши в терминале.</value></data>
   <data name="Perm.Gone" xml:space="preserve"><value>Этот запрос уже не активен</value></data>
+  <data name="Settings.PhoneShots" xml:space="preserve"><value>Скриншоты на телефон</value></data>
+  <data name="Settings.PhoneShots.Note" xml:space="preserve"><value>Выключено — снимки остаются в тостах. Включено — наблюдатели со скриншотом отправляют его и через серверы Telegram или ntfy, со всем, что видно в окне.</value></data>
 </root>

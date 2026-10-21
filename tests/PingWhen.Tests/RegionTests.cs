@@ -86,6 +86,25 @@ public class RegionTests
         Assert.IsLessThan(jpeg.Length, RegionCapture.Jpeg(img, 2560, 1440, new(0, 0, 0.25, 0.25)).Length + 1);
     }
 
+    /// <summary>Decision 18: a watcher's screenshot tick alone never sends the picture off the PC.</summary>
+    [TestMethod]
+    public void ScreenshotsStayOnThePcUnlessScreenshotsToThePhoneIsOn()
+    {
+        Assert.IsFalse(new Watcher().Screenshot);
+        Assert.IsFalse(new PingWhen.Shell.Settings().PhoneScreenshots);
+        var n = new Note("Done: timeout 30", "code 0", ImagePath: @"C:\Users\demo\shot.jpg");
+        var saved = PingWhen.Shell.Settings.Current.PhoneScreenshots;
+        try
+        {
+            PingWhen.Shell.Settings.Current.PhoneScreenshots = false;
+            Assert.IsNull(Notifier.ForPhone(n).ImagePath, "default: no picture to Telegram or ntfy");
+            Assert.AreEqual("Done: timeout 30", Notifier.ForPhone(n).Title);
+            PingWhen.Shell.Settings.Current.PhoneScreenshots = true;
+            Assert.AreEqual(n.ImagePath, Notifier.ForPhone(n).ImagePath);
+        }
+        finally { PingWhen.Shell.Settings.Current.PhoneScreenshots = saved; }
+    }
+
     sealed class Stub : HttpMessageHandler
     {
         public string? Method, ContentType, Body;

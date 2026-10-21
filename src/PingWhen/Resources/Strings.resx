@@ -270,8 +270,8 @@ Process exited, code 0</value></data>
   <data name="New.PickRegion" xml:space="preserve"><value>Select region…</value></data>
   <data name="New.RegionWhole" xml:space="preserve"><value>the whole window</value></data>
   <data name="New.RegionPart" xml:space="preserve"><value>from {0}%, {1}% · {2}×{3}% of the window</value></data>
-  <data name="New.Screenshot" xml:space="preserve"><value>Attach a screenshot of the window</value></data>
-  <data name="New.Screenshot.Note" xml:space="preserve"><value>The picture goes to the toast and through Telegram or ntfy servers. JPEG up to 300 KB.</value></data>
+  <data name="New.Screenshot" xml:space="preserve"><value>Screenshot of the window in the notification</value></data>
+  <data name="New.Screenshot.Note" xml:space="preserve"><value>In the toast on this PC. To the phone only if "Screenshots to the phone" is on in Settings.</value></data>
   <data name="Region.Title" xml:space="preserve"><value>Select a region</value></data>
   <data name="Region.Hint" xml:space="preserve"><value>Drag a rectangle over the part to watch: a progress bar, a percentage, a "Done" label. The window may be covered by others later, but not minimized.</value></data>
   <data name="Region.Whole" xml:space="preserve"><value>Whole window</value></data>
@@ -296,4 +296,6 @@ Process exited, code 0</value></data>
   <data name="Perm.Denied" xml:space="preserve"><value>Denied from the phone</value></data>
   <data name="Perm.Expired" xml:space="preserve"><value>No answer: decide in the terminal.</value></data>
   <data name="Perm.Gone" xml:space="preserve"><value>This request is no longer active</value></data>
+  <data name="Settings.PhoneShots" xml:space="preserve"><value>Screenshots to the phone</value></data>
+  <data name="Settings.PhoneShots.Note" xml:space="preserve"><value>Off: pictures stay in toasts. On: watchers with a screenshot also send it through Telegram or ntfy servers, with whatever the window shows.</value></data>
 </root>

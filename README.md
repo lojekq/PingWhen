@@ -106,6 +106,7 @@ The phone channel is your own bot: PingWhen calls the Bot API directly, pairs wi
 |---|---|---|
 | Telegram | not set up | Your bot's token (DPAPI), paired chat, Test, Unpair |
 | ntfy | off | Server (ntfy.sh or yours), random topic, optional token (DPAPI), Test, QR to subscribe |
+| Screenshots to the phone | off | Watchers with a screenshot also send it through Telegram or ntfy; off = pictures stay in toasts |
 | Answer permission prompts from the phone | off | Telegram buttons Allow once / Deny for Claude Code, only while you are away |
 | I'm away after | 3 min | Auto route: the phone gets a message after this long without input |
 | Phone during fullscreen games and presentations | on | Auto route: the phone also gets it while a game or presentation is fullscreen |
@@ -116,7 +117,7 @@ The phone channel is your own bot: PingWhen calls the Bot API directly, pairs wi
 | Start with Windows, Start menu shortcut | off; on when the exe is in `%LOCALAPPDATA%\Programs\PingWhen\` | Starts in the tray |
 | Check for updates | on | Once a day asks GitHub about a new release, downloads nothing |
 
-Per watcher: **Route** Auto / PC only / Phone only / PC and phone, **Don't let the PC sleep while waiting**, **Wait for child processes too** (installers), **Every time**, **Attach a screenshot of the window** (off), **Tell me if it is not done within N minutes**. Tray: **Do not disturb for 1 h** mutes the phone, toasts stay.
+Per watcher: **Route** Auto / PC only / Phone only / PC and phone, **Don't let the PC sleep while waiting**, **Wait for child processes too** (installers), **Every time**, **Screenshot of the window in the notification** (off; in the toast, on the phone only with "Screenshots to the phone"), **Tell me if it is not done within N minutes**. Tray: **Do not disturb for 1 h** mutes the phone, toasts stay.
 Data lives in `%APPDATA%\PingWhen`: `settings.json`, `watchers.json`, `history.jsonl` (last 500 events), `logs\`.
 
 ## FAQ
@@ -173,7 +174,7 @@ Remove the `pingwhen` MCP server (`claude mcp remove pingwhen`) and the hooks, t
 ## Privacy
 
 No telemetry, no account, no author's server. Network requests:
-- `https://api.telegram.org/bot<your token>/…` — only when sending a message, checking the token, pairing or waiting for a permission button (getMe, getUpdates, sendMessage, sendPhoto, answerCallbackQuery, editMessageText). Messages go through Telegram's servers: watcher titles, window titles, process and file names; Claude's reply text, screenshots and permission requests only if you turn them on.
+- `https://api.telegram.org/bot<your token>/…` — only when sending a message, checking the token, pairing or waiting for a permission button (getMe, getUpdates, sendMessage, sendPhoto, answerCallbackQuery, editMessageText). Messages go through Telegram's servers: watcher titles, window titles, process and file names; Claude's reply text, screenshots (two switches: on the watcher and "Screenshots to the phone") and permission requests only if you turn them on.
 - Your ntfy server (`https://ntfy.sh` by default) — only if ntfy is on: the same texts, screenshots if turned on. Anyone who knows the topic can read it.
 - `GET https://api.github.com/repos/lojekq/PingWhen/releases/latest` once a day; turn it off in Settings.
 

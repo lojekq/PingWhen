@@ -126,6 +126,16 @@
             </StackPanel>
         </ui:Card>
 
+        <ui:CardControl Icon="{ui:SymbolIcon ImageMultiple24}" Margin="0,4,0,4">
+            <ui:CardControl.Header>
+                <StackPanel>
+                    <ui:TextBlock Text="{l:T Settings.PhoneShots}" />
+                    <ui:TextBlock Text="{l:T Settings.PhoneShots.Note}" FontTypography="Caption" Appearance="Secondary" TextWrapping="Wrap" />
+                </StackPanel>
+            </ui:CardControl.Header>
+            <ui:ToggleSwitch x:Name="PhoneShotsSwitch" />
+        </ui:CardControl>
+
         <ui:TextBlock FontTypography="Subtitle" Text="{l:T Settings.Route}" Margin="0,16,0,8" />
         <ui:CardControl Icon="{ui:SymbolIcon PersonClock24}" Margin="0,0,0,4">
             <ui:CardControl.Header>
