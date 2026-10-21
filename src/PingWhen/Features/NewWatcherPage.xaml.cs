@@ -342,7 +342,12 @@ public partial class NewWatcherPage
         w.WaitChildren = c == Cond.Exited && WaitChildrenBox.IsChecked == true;
         w.Repeat = c != Cond.Closed && RepeatBox.IsChecked == true;
         if (w.Repeat && w.Kind == Kind.Process && w.ProcessName is null && w.CommandLineContains is null)
-            w.ProcessName = w.Processes.FirstOrDefault()?.Name; // "every time it exits" needs a name: a pid exits once
+        {
+            // "every time it exits" needs a selector, a pid exits once: the same command line for a terminal command, else the name
+            var args = editing is null && SelectedCommand is { } cmd ? CmdLine.SplitExe(cmd.CommandLine).RawArgs.Trim() : "";
+            if (args.Length >= 3) w.CommandLineContains = args;
+            else w.ProcessName = w.Processes.FirstOrDefault()?.Name;
+        }
         w.DeadlineMinutes = DeadlineBox.IsChecked == true ? (int)Math.Max(1, DeadlineMinutes.Value ?? 60) : null;
         return true;
     }

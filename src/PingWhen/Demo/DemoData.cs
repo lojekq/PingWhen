@@ -58,6 +58,7 @@ public static class DemoData
                 (161, Outcome.Lost, "Потерян: render.exe", "Не найден после перезапуска", 0, ""),
                 (190, Outcome.Done, "Готово: ollama pull · 7 мин", "Сеть ниже 100 КБ/с 60 с", 420, "pc"),
                 (240, Outcome.Error, "Ошибка: gradle · код 137", "Процесс завершился, код 137", 860, "pc,phone:failed"),
+                (275, Outcome.Done, "Готово: render.blend · 48 мин", "Найден текст: Finished 100%", 2880, "pc,ntfy"),
             ]
             :
             [
@@ -73,6 +74,7 @@ public static class DemoData
                 (161, Outcome.Lost, "Lost: render.exe", "Not found after a restart", 0, ""),
                 (190, Outcome.Done, "Done: ollama pull · 7 min", "Network below 100 KB/s for 60 s", 420, "pc"),
                 (240, Outcome.Error, "Error: gradle · code 137", "Process exited, code 137", 860, "pc,phone:failed"),
+                (275, Outcome.Done, "Done: render.blend · 48 min", "Text found: Finished 100%", 2880, "pc,ntfy"),
             ];
         for (var i = 0; i < 20; i++)
         {
@@ -85,6 +87,7 @@ public static class DemoData
         AgentsPage.DemoSessions.Add(("claude-code", "PingWhen", 0, 26));
         AgentsPage.DemoSessions.Add(("claude-code", "mlink", 1, 8));
         PingSettingsView.DemoTelegram = new TelegramSettings { BotUsername = "my_pingwhen_bot", ChatId = 1, FirstName = "Alex", PairedAt = now };
+        Settings.Current.Ntfy = new NtfySettings { Enabled = true, Server = "https://ntfy.sh", Topic = "pingwhen-demo-q7m2x9k4" }; // in memory only under --demo
     }
 
     /// <summary>Under --demo the New page and the tray menu offer these instead of the real windows and processes.</summary>

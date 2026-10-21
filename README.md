@@ -29,12 +29,11 @@ or in a fullscreen game. Your AI agents get the same engine: "Claude finished" a
 
 - **Any window, one hotkey** — `Ctrl+Alt+W`: process exit (with exit code), window closed or title changed, file stopped growing, CPU/GPU/disk/network gone quiet.
 - **Terminal-aware** — watches the command running inside Windows Terminal or VS Code, not the terminal itself.
-- **PC or phone** — a toast while you are at the PC; a Telegram message from your own bot when you are away or in a fullscreen game. Setup takes two minutes.
-- **Built for AI agents** — an MCP server and Claude Code hooks: agents start watchers and send notifications; "done" and "needs your answer" come by themselves.
-- **Survives restarts and sleep** — watchers are saved, pids are checked by start time, quiet timers restart after wake; optionally keeps the PC awake while waiting.
-- **Local-only** — no account, no telemetry, no admin rights, no author's server. The bot is yours; its token is encrypted with Windows DPAPI.
-
-Planned for v1.0: region watch with pixel diff and Windows OCR, screenshots in notifications, ntfy as a second channel, Allow once / Deny buttons for Claude Code permission prompts.
+- **Region watch** — draw a rectangle on a window: "stopped changing", "changed" or "the text 100% appeared" (Windows OCR), even behind other windows.
+- **PC or phone** — a toast while you are at the PC; a message from your own Telegram bot or ntfy when you are away or in a fullscreen game, optionally with a screenshot.
+- **Built for AI agents** — an MCP server and Claude Code hooks: "done" and "needs your answer" reach the phone; opt-in Allow once / Deny buttons answer the permission prompt from Telegram.
+- **Every time, deadlines, flashing** — repeat a watcher ("every time ffmpeg exits"), get "not done in 30 min", or wait for a taskbar button to flash.
+- **Local-only** — no account, no telemetry, no admin rights, no author's server. The bot is yours; tokens are encrypted with Windows DPAPI.
 
 ## Screenshots
 
@@ -60,6 +59,10 @@ Requirements: Windows 11 x64. Windows 10 22H2 should work but is not tested.
 **Phone (Telegram, two minutes).** In Telegram open [@BotFather](https://t.me/BotFather), send `/newbot`, pick a name and a username, copy the token.
 In PingWhen: Settings → Telegram → paste the token → **Check** → **Pair** → **Open in Telegram** → **Start** (or send the 8-character code to the bot from your phone).
 The bot only sends, and only to the chat that sent the code. Use a separate bot for each PC.
+Where Telegram is blocked, turn on **ntfy** in Settings: a random topic on ntfy.sh or your own server, subscribe by scanning the QR code in the ntfy app.
+
+**Region of a window:** New watcher → the window → "Region stops changing" (or "changes", "Text appears in the region") → **Select region…** → drag a rectangle over the progress bar.
+The window may be covered by others; a minimized window pauses the watch. Text recognition uses the Windows OCR languages you have installed.
 
 **From scripts:** `npm run build && PingWhen.exe --notify "Build finished"`; title and body: `PingWhen.exe --notify "Title" "Body"`.
 
@@ -73,19 +76,23 @@ claude mcp add --scope user --transport stdio pingwhen -- "C:\Users\<you>\AppDat
 claude mcp list
 ```
 
-Tools: `notify`, `watch_process` (by pid, name or command line substring), `watch_file`, `watch_window`, `watch_quiet`, `list_watchers`, `cancel_watcher`.
+Tools: `notify`, `watch_process` (by pid, name or command line substring), `watch_file`, `watch_window` (closed, title, flashed), `watch_quiet`, `list_watchers`, `cancel_watcher`; watch tools take `repeat` and `deadline_minutes`.
 Limits: 6 notifications a minute per session and 60 an hour; 20 watchers per session, 50 in total; agent watchers expire after 24 h.
 
-Hooks bring "<folder>: Claude finished" and "<folder>: needs your answer" even while Claude waits for permission and cannot call a tool. Add to `~/.claude/settings.json`:
+Hooks bring "<folder>: Claude finished" and "<folder>: needs your answer" even while Claude waits for permission and cannot call a tool. Add to `~/.claude/settings.json` (the Agents page has it with your path):
 
 ```json
 { "hooks": {
-  "Stop":         [{ "hooks": [{ "type": "command", "command": "C:\\Users\\<you>\\AppData\\Local\\Programs\\PingWhen\\PingWhen.exe", "args": ["--hook"], "timeout": 10 }] }],
-  "Notification": [{ "hooks": [{ "type": "command", "command": "C:\\Users\\<you>\\AppData\\Local\\Programs\\PingWhen\\PingWhen.exe", "args": ["--hook"], "timeout": 10 }] }]
+  "Stop":             [{ "hooks": [{ "type": "command", "command": "C:\\Users\\<you>\\AppData\\Local\\Programs\\PingWhen\\PingWhen.exe", "args": ["--hook"], "timeout": 10 }] }],
+  "Notification":     [{ "hooks": [{ "type": "command", "command": "C:\\Users\\<you>\\AppData\\Local\\Programs\\PingWhen\\PingWhen.exe", "args": ["--hook"], "timeout": 10 }] }],
+  "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "C:\\Users\\<you>\\AppData\\Local\\Programs\\PingWhen\\PingWhen.exe", "args": ["--hook"], "timeout": 10 }] }]
 }}
 ```
 
-There is no ping while the session's terminal or editor is the active window and you are at the PC. `--hook` always exits 0 and prints nothing, so it never stops Claude.
+There is no ping while the session's terminal or editor is the active window and you are at the PC. `UserPromptSubmit` lets PingWhen skip "finished" for short turns (Agents page). `--hook` always exits 0 and prints nothing, so it never stops Claude.
+
+**Answer from the phone (opt-in).** Settings → Telegram → "Answer Claude Code's permission prompts from the phone" adds a `PermissionRequest` hook (timeout 150) to the JSON.
+While you are away, the prompt comes to Telegram with **Allow once** and **Deny**; no answer in 2 minutes and Claude shows its usual dialog. Only your paired account can press; there is no "always allow" and no text input.
 
 ## How it works
 
@@ -98,15 +105,18 @@ The phone channel is your own bot: PingWhen calls the Bot API directly, pairs wi
 | Setting | Default | What it does |
 |---|---|---|
 | Telegram | not set up | Your bot's token (DPAPI), paired chat, Test, Unpair |
+| ntfy | off | Server (ntfy.sh or yours), random topic, optional token (DPAPI), Test, QR to subscribe |
+| Answer permission prompts from the phone | off | Telegram buttons Allow once / Deny for Claude Code, only while you are away |
 | I'm away after | 3 min | Auto route: the phone gets a message after this long without input |
 | Phone during fullscreen games and presentations | on | Auto route: the phone also gets it while a game or presentation is fullscreen |
 | Hotkey | `Ctrl+Alt+W` | New watcher for the active window |
 | Claude's reply on the phone | off | Agents page: the first 150 characters of Claude's last message in the "finished" message |
+| "Claude finished" only after turns of at least | 0 s | Agents page: skip short turns (needs the `UserPromptSubmit` hook) |
 | Language, theme | Windows | English or Russian (after a restart), light or dark |
 | Start with Windows, Start menu shortcut | off; on when the exe is in `%LOCALAPPDATA%\Programs\PingWhen\` | Starts in the tray |
 | Check for updates | on | Once a day asks GitHub about a new release, downloads nothing |
 
-Per watcher: **Route** Auto / PC only / Phone only / PC and phone, **Don't let the PC sleep while waiting**, **Wait for child processes too** (installers). Tray: **Do not disturb for 1 h** mutes the phone, toasts stay.
+Per watcher: **Route** Auto / PC only / Phone only / PC and phone, **Don't let the PC sleep while waiting**, **Wait for child processes too** (installers), **Every time**, **Attach a screenshot of the window** (off), **Tell me if it is not done within N minutes**. Tray: **Do not disturb for 1 h** mutes the phone, toasts stay.
 Data lives in `%APPDATA%\PingWhen`: `settings.json`, `watchers.json`, `history.jsonl` (last 500 events), `logs\`.
 
 ## FAQ
@@ -126,7 +136,18 @@ Please report it to your antivirus vendor and open an issue with the detection n
 
 <details><summary>Telegram is blocked in my country</summary>
 
-The toast on the PC always works. A VPN or proxy set in Windows is used automatically. ntfy as a second phone channel (also self-hosted) is planned for v1.0.
+The toast on the PC always works. Turn on ntfy in Settings (ntfy.sh or your own server). A VPN or proxy set in Windows is used automatically for both.
+</details>
+
+<details><summary>Region watch shows a yellow border or no text is found</summary>
+
+Windows draws a yellow border around a captured window on builds older than Windows 11 24H2; on newer builds PingWhen turns it off.
+"Text appears" needs a Windows OCR language (Settings → Time &amp; language → Language: a language with optical character recognition). A minimized window gives no picture: the watch pauses.
+</details>
+
+<details><summary>Is answering Claude from the phone safe?</summary>
+
+Whoever controls your Telegram account can approve your agent's actions, so it is off by default. A press counts only from your paired account, only once and only while the request waits; there is no "always allow".
 </details>
 
 <details><summary>My bot token leaked</summary>
@@ -152,7 +173,8 @@ Remove the `pingwhen` MCP server (`claude mcp remove pingwhen`) and the hooks, t
 ## Privacy
 
 No telemetry, no account, no author's server. Network requests:
-- `https://api.telegram.org/bot<your token>/…` — only when sending a message, checking the token or pairing (getMe, getUpdates, sendMessage). Messages go through Telegram's servers: watcher titles, window titles, process and file names; Claude's reply text only if you turn it on.
+- `https://api.telegram.org/bot<your token>/…` — only when sending a message, checking the token, pairing or waiting for a permission button (getMe, getUpdates, sendMessage, sendPhoto, answerCallbackQuery, editMessageText). Messages go through Telegram's servers: watcher titles, window titles, process and file names; Claude's reply text, screenshots and permission requests only if you turn them on.
+- Your ntfy server (`https://ntfy.sh` by default) — only if ntfy is on: the same texts, screenshots if turned on. Anyone who knows the topic can read it.
 - `GET https://api.github.com/repos/lojekq/PingWhen/releases/latest` once a day; turn it off in Settings.
 
 The agent pipe `\\.\pipe\PingWhen-<your SID>` is open only to your Windows account. Agents can notify and watch (metadata only); they cannot read files or change settings.
