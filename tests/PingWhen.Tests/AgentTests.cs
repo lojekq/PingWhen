@@ -157,6 +157,28 @@ public class StoreTests
         finally { child.Kill(); }
     }
 
+    /// <summary>
+    /// Regression: when the last watcher left through a command (process exit, cancel) while a tick was pending,
+    /// the next watcher never ticked: PeriodicTimer allows one pending wait and the loop asked for a second.
+    /// </summary>
+    [TestMethod]
+    public async Task TicksResumeAfterTheLastWatcherWasCancelled()
+    {
+        var engine = new Engine();
+        var fired = new System.Collections.Concurrent.BlockingCollection<Fire>();
+        engine.Fired += f => { if (f.Outcome == Outcome.Done) fired.Add(f); };
+        engine.Start();
+        Directory.CreateDirectory(Store.Dir);
+        var first = await engine.Add(new Watcher { Kind = Kind.File, Until = Until.Appeared, Title = "first", Path = Path.Combine(Store.Dir, "never.part") });
+        await Task.Delay(1500);                    // ticking, with the next tick pending
+        Assert.IsTrue(await engine.Cancel(first.Id));
+        var path = Path.Combine(Store.Dir, "second.part");
+        await engine.Add(new Watcher { Kind = Kind.File, Until = Until.Appeared, Title = "second", Path = path });
+        File.WriteAllText(path, "x");
+        Assert.IsTrue(fired.TryTake(out var f, TimeSpan.FromMilliseconds(1300)), "the engine stopped ticking"); // one tick period plus slack
+        Assert.AreEqual("second", f.W.Title);
+    }
+
     [TestMethod]
     public async Task ProcessExitFiresWithTheExitCode()
     {

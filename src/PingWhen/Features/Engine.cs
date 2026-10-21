@@ -215,7 +215,7 @@ public sealed class Engine
             if (live.Count == 0)
             {
                 if (dirty) Save();
-                tick = null;
+                // a pending tick stays pending: PeriodicTimer allows one wait at a time, and it costs nothing while idle
                 await (read ??= commands.Reader.WaitToReadAsync().AsTask());
                 read = null;
                 continue;
