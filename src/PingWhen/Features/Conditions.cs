@@ -43,7 +43,7 @@ public static class Conditions
         return (s, now - s.StableSince >= seconds * 1000L);
     }
 
-    /// <summary>Window: null title = window gone, which fires for every condition ("closed").</summary>
+    /// <summary>Window: null title = window gone, which fires for every condition ("closed"). Flashed fires from ShellHook.</summary>
     public static bool Window(Until until, string? title, string? initialTitle, string? pattern, bool isRegex) => title is null || until switch
     {
         Until.TitleChanged => title != initialTitle,

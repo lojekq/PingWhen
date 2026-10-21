@@ -230,4 +230,18 @@ Open the folder?</value></data>
   <data name="Demo.Lang" xml:space="preserve"><value>en</value></data>
   <data name="Demo.Push" xml:space="preserve"><value>Done: ffmpeg · 37 min
 Process exited, code 0</value></data>
+  <data name="Fire.Flashed" xml:space="preserve"><value>The window flashed on the taskbar</value></data>
+  <data name="Fire.Overdue" xml:space="preserve"><value>Not done in {1} min: {0}</value></data>
+  <data name="Fire.Overdue.Body" xml:space="preserve"><value>Still waiting; PingWhen keeps watching.</value></data>
+  <data name="Live.WaitingProcess" xml:space="preserve"><value>waiting for the next process</value></data>
+  <data name="Outcome.Overdue" xml:space="preserve"><value>overdue</value></data>
+  <data name="New.Cond.Flashed" xml:space="preserve"><value>Window flashes on the taskbar</value></data>
+  <data name="Cond.Flashed" xml:space="preserve"><value>Flashes on the taskbar</value></data>
+  <data name="Cond.Repeat" xml:space="preserve"><value>every time</value></data>
+  <data name="Cond.Deadline" xml:space="preserve"><value>deadline {0} min</value></data>
+  <data name="New.Repeat" xml:space="preserve"><value>Every time (keep watching after it fires, at most once a minute)</value></data>
+  <data name="New.Deadline" xml:space="preserve"><value>Tell me if it is not done within</value></data>
+  <data name="New.Minutes" xml:space="preserve"><value>minutes</value></data>
+  <data name="Agents.StopMin" xml:space="preserve"><value>"Claude finished" only after turns of at least</value></data>
+  <data name="Agents.StopMin.Note" xml:space="preserve"><value>0 = after every turn. Needs the UserPromptSubmit hook from the JSON above.</value></data>
 </root>

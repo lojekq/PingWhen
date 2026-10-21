@@ -184,8 +184,10 @@ public static class Mcp
              [Description("Substring of the command line, e.g. train.py. Use this for background commands.")] string? command_line_contains = null,
              [Description("Title for the notification.")] string? title = null,
              [Description("auto | pc | phone | both.")] string? route = null,
-             [Description("Keep the PC awake until it ends.")] bool? keep_awake = null) =>
-            { Identify(s, server); return WatchProcess(s, pid, name, command_line_contains, title, route, keep_awake ?? false); },
+             [Description("Keep the PC awake until it ends.")] bool? keep_awake = null,
+             [Description("Keep watching after it fires (every time it happens, at most once a minute).")] bool? repeat = null,
+             [Description("Also notify once if it has not happened within this many minutes.")] int? deadline_minutes = null) =>
+            { Identify(s, server); return WatchProcess(s, pid, name, command_line_contains, title, route, keep_awake ?? false, repeat ?? false, deadline_minutes); },
             new() { Name = "watch_process", Description = "Notify the user when a process (or every process matching) exits, with duration and exit code.", Destructive = false, OpenWorld = false });
 
         yield return McpServerTool.Create(
@@ -193,19 +195,23 @@ public static class Mcp
              [Description("Absolute path.")] string path,
              [Description("stopped_growing | appeared | disappeared.")] string until,
              [Description("stopped_growing: seconds without growth, default 30, minimum 5.")] int? quiet_seconds = null,
-             [Description("Title for the notification.")] string? title = null) =>
-            { Identify(s, server); return WatchFile(s, path, until, quiet_seconds, title); },
+             [Description("Title for the notification.")] string? title = null,
+             [Description("Keep watching after it fires (every time it happens, at most once a minute).")] bool? repeat = null,
+             [Description("Also notify once if it has not happened within this many minutes.")] int? deadline_minutes = null) =>
+            { Identify(s, server); return WatchFile(s, path, until, quiet_seconds, title, repeat ?? false, deadline_minutes); },
             new() { Name = "watch_file", Description = "Notify the user when a file stops growing (after it was seen growing), appears or disappears.", Destructive = false, OpenWorld = false });
 
         yield return McpServerTool.Create(
             (McpServer server,
              [Description("Part of the window title (case-insensitive).")] string? title_contains = null,
              [Description("Window handle as a number.")] long? hwnd = null,
-             [Description("closed | title_changed | title_matches.")] string until = "closed",
+             [Description("closed | title_changed | title_matches | flashed (taskbar button flashes).")] string until = "closed",
              [Description("title_matches: text to look for in the title.")] string? pattern = null,
-             [Description("title_matches: pattern is a .NET regex (100 ms timeout).")] bool? regex = null) =>
-            { Identify(s, server); return WatchWindow(s, title_contains, hwnd, until, pattern, regex ?? false); },
-            new() { Name = "watch_window", Description = "Notify the user when a window closes, changes its title or its title matches.", Destructive = false, OpenWorld = false });
+             [Description("title_matches: pattern is a .NET regex (100 ms timeout).")] bool? regex = null,
+             [Description("Keep watching after it fires (every time it happens, at most once a minute).")] bool? repeat = null,
+             [Description("Also notify once if it has not happened within this many minutes.")] int? deadline_minutes = null) =>
+            { Identify(s, server); return WatchWindow(s, title_contains, hwnd, until, pattern, regex ?? false, repeat ?? false, deadline_minutes); },
+            new() { Name = "watch_window", Description = "Notify the user when a window closes, changes its title, its title matches or its taskbar button flashes.", Destructive = false, OpenWorld = false });
 
         yield return McpServerTool.Create(
             (McpServer server,
@@ -213,8 +219,10 @@ public static class Mcp
              [Description("Process name: the process with its children; omit for the whole system. net is system only.")] string? process = null,
              [Description("Threshold: % for cpu/gpu (default 5), MB/s for disk (default 1), KB/s for net (default 100).")] double? below = null,
              [Description("Seconds below the threshold, default 30 (net 60).")] int? seconds = null,
-             [Description("Count as busy already (do not wait until the metric goes above the threshold first).")] bool? already_running = null) =>
-            { Identify(s, server); return WatchQuiet(s, metric, process, below, seconds, already_running ?? false); },
+             [Description("Count as busy already (do not wait until the metric goes above the threshold first).")] bool? already_running = null,
+             [Description("Keep watching after it fires (every time it happens, at most once a minute).")] bool? repeat = null,
+             [Description("Also notify once if it has not happened within this many minutes.")] int? deadline_minutes = null) =>
+            { Identify(s, server); return WatchQuiet(s, metric, process, below, seconds, already_running ?? false, repeat ?? false, deadline_minutes); },
             new() { Name = "watch_quiet", Description = "Notify the user when CPU, GPU, disk or network stays below a threshold. Arms only after the metric was above it.", Destructive = false, OpenWorld = false });
 
         yield return McpServerTool.Create(
@@ -257,8 +265,10 @@ public static class Mcp
         return new { pc = pc ? "sent" : "off", phone = phone ? "queued" : Notifier.PhoneReady ? "off" : "not configured" };
     }
 
-    static Watcher New(AgentSession s, Kind kind, Until until, string title, string? route, bool keepAwake)
+    static Watcher New(AgentSession s, Kind kind, Until until, string title, string? route, bool keepAwake, bool repeat = false, int? deadline = null)
     {
+        Check(deadline is null or (> 0 and <= 10080), "deadline_minutes: 1 to 10080");
+        Check(!repeat || !(kind == Kind.Window && until == Until.Closed), "a closed window cannot repeat");
         var all = Engine.Current.Snapshot;
         Check(all.Count < MaxWatchers, $"limit: at most {MaxWatchers} watchers");
         Check(all.Count(v => v.W.CreatedBy == s.Key) < MaxPerSession, $"limit: at most {MaxPerSession} watchers per session");
@@ -266,44 +276,45 @@ public static class Mcp
         {
             Kind = kind, Until = until, Title = $"{s.Folder}: {Fmt.Cut(title, 100)}", Route = Parse(route, Route.Auto, "route"),
             KeepAwake = keepAwake, CreatedBy = s.Key, ExpiresAt = DateTime.UtcNow + AgentWatcherLife,
+            Repeat = repeat, DeadlineMinutes = deadline,
         };
     }
 
-    public static async Task<object> WatchProcess(AgentSession s, int? pid, string? name, string? cmd, string? title, string? route, bool keepAwake)
+    public static async Task<object> WatchProcess(AgentSession s, int? pid, string? name, string? cmd, string? title, string? route, bool keepAwake, bool repeat = false, int? deadline = null)
     {
         Check(new object?[] { pid, name, cmd }.Count(x => x is not null) == 1, "give exactly one of pid, name, command_line_contains");
         Check(cmd is null || cmd.Trim().Length >= 3, "command_line_contains: at least 3 characters");
         var found = Targets.Match(pid, name?.Trim(), cmd?.Trim());
-        Check(found.Count > 0, "no running process matches");
+        Check(found.Count > 0 || (repeat && pid is null), "no running process matches");
         Check(found.Count <= 64, $"{found.Count} processes match: narrow it down");
-        var w = New(s, Kind.Process, Until.Exited, title ?? cmd ?? Path.GetFileNameWithoutExtension(found[0].Name), route, keepAwake);
+        var w = New(s, Kind.Process, Until.Exited, title ?? cmd ?? Path.GetFileNameWithoutExtension(found.FirstOrDefault()?.Name ?? name ?? "?"), route, keepAwake, repeat, deadline);
         w.Processes = found;
         w.ProcessName = name;
         w.CommandLineContains = cmd;
-        w.ExePath = ProcessInfo.ExePath(found[0].Pid);
+        w.ExePath = found.Count > 0 ? ProcessInfo.ExePath(found[0].Pid) : null;
         await Engine.Current.Add(w);
         return new { id = w.Id, processes = found.Select(p => new { pid = p.Pid, name = p.Name }) };
     }
 
-    public static async Task<object> WatchFile(AgentSession s, string path, string until, int? quietSeconds, string? title)
+    public static async Task<object> WatchFile(AgentSession s, string path, string until, int? quietSeconds, string? title, bool repeat = false, int? deadline = null)
     {
         Check(!string.IsNullOrWhiteSpace(path) && Path.IsPathFullyQualified(path), "path must be absolute");
         var u = Parse(until, Until.StoppedGrowing, "until");
         Check(u is Until.StoppedGrowing or Until.Appeared or Until.Disappeared, "until: stopped_growing | appeared | disappeared");
         var size = FileProbe.Size(path);
         Check(u == Until.Appeared || size >= 0, "file not found");
-        var w = New(s, Kind.File, u, title ?? Path.GetFileName(path), null, false);
+        var w = New(s, Kind.File, u, title ?? Path.GetFileName(path), null, false, repeat, deadline);
         w.Path = Path.GetFullPath(path);
         w.QuietSeconds = Math.Max(5, quietSeconds ?? 30);
         await Engine.Current.Add(w);
         return new { id = w.Id, size = size >= 0 ? size : (long?)null };
     }
 
-    public static async Task<object> WatchWindow(AgentSession s, string? titleContains, long? hwnd, string until, string? pattern, bool regex)
+    public static async Task<object> WatchWindow(AgentSession s, string? titleContains, long? hwnd, string until, string? pattern, bool regex, bool repeat = false, int? deadline = null)
     {
         Check((titleContains is null) != (hwnd is null), "give exactly one of title_contains, hwnd");
         var u = Parse(until, Until.Closed, "until");
-        Check(u is Until.Closed or Until.TitleChanged or Until.TitleMatches, "until: closed | title_changed | title_matches");
+        Check(u is Until.Closed or Until.TitleChanged or Until.TitleMatches or Until.Flashed, "until: closed | title_changed | title_matches | flashed");
         Check(u != Until.TitleMatches || !string.IsNullOrEmpty(pattern), "title_matches needs pattern");
         if (regex && pattern is not null && Conditions.RegexError(pattern) is { } err) throw new McpException("pattern: " + err);
         var win = hwnd is { } h
@@ -311,7 +322,7 @@ public static class Mcp
             : WindowProbe.Candidates().FirstOrDefault(x => x.Title.Contains(titleContains!, StringComparison.OrdinalIgnoreCase));
         Check(win is not null, "no such window");
         Check(Targets.ByPid(win!.Pid) is not null, "the window's process is not accessible");
-        var w = New(s, Kind.Window, u, Fmt.Cut(win.Title, 80), null, false);
+        var w = New(s, Kind.Window, u, Fmt.Cut(win.Title, 80), null, false, repeat, deadline);
         w.Hwnd = win.Hwnd;
         w.Processes = [Targets.ByPid(win.Pid)!];
         w.WindowClass = win.Class;
@@ -323,13 +334,13 @@ public static class Mcp
         return new { id = w.Id, window = new { hwnd = (long)win.Hwnd, title = win.Title } };
     }
 
-    public static async Task<object> WatchQuiet(AgentSession s, string metric, string? process, double? below, int? seconds, bool alreadyRunning)
+    public static async Task<object> WatchQuiet(AgentSession s, string metric, string? process, double? below, int? seconds, bool alreadyRunning, bool repeat = false, int? deadline = null)
     {
         var m = Parse<Metric>(metric, Metric.Cpu, "metric");
         Check(string.IsNullOrWhiteSpace(metric) == false, "metric is required");
         Check(m != Metric.Net || process is null, "net is system-wide only");
         Check(below is null or > 0, "below must be positive");
-        var w = New(s, Kind.Quiet, Until.Quiet, process ?? Loc.T("Target.System"), null, false);
+        var w = New(s, Kind.Quiet, Until.Quiet, process ?? Loc.T("Target.System"), null, false, repeat, deadline);
         if (process is not null)
         {
             var found = Targets.Match(null, process.Trim(), null);
@@ -389,7 +400,8 @@ public static class Hooks
     }
 
     /// <summary>Seen: the session's own terminal/editor is the foreground window and the user is at the PC.</summary>
-    public sealed record Context(DateTime Now, DateTime? LastStop, bool Seen, bool ClaudeText);
+    /// <summary>TurnStart: when this session's prompt was submitted (UserPromptSubmit hook); StopMinSeconds 0 = ping after every turn.</summary>
+    public sealed record Context(DateTime Now, DateTime? LastStop, bool Seen, bool ClaudeText, DateTime? TurnStart = null, int StopMinSeconds = 0);
 
     public static readonly TimeSpan IdleAfterStop = TimeSpan.FromMinutes(5);
 
@@ -397,7 +409,7 @@ public static class Hooks
     {
         Note? n = e.Event switch
         {
-            "Stop" when !e.StopHookActive => new Note(string.Format(Loc.T("Hook.Done"), e.Folder),
+            "Stop" when !e.StopHookActive && !(c.StopMinSeconds > 0 && c.TurnStart is { } ts && c.Now - ts < TimeSpan.FromSeconds(c.StopMinSeconds)) => new Note(string.Format(Loc.T("Hook.Done"), e.Folder),
                 c.ClaudeText && e.LastAssistantMessage is { Length: > 0 } m ? Fmt.Cut(m.ReplaceLineEndings(" ").Trim(), 150) : ""),
             "Notification" => e.NotificationType switch
             {
@@ -412,20 +424,22 @@ public static class Hooks
         return c.Seen ? null : n;
     }
 
-    static readonly Dictionary<string, DateTime> LastStop = [];
+    static readonly Dictionary<string, DateTime> LastStop = [], TurnStart = [];
 
     public static void Handle(string json, Hello hello)
     {
         if (Parse(json) is not { } e) return;
         var key = e.SessionId ?? hello.Cwd ?? "";
-        DateTime? last;
+        DateTime? last, start;
         lock (LastStop)
         {
             last = LastStop.TryGetValue(key, out var t) ? t : null;
+            start = TurnStart.TryGetValue(key, out var s) ? s : null;
             if (e.Event == "Stop") LastStop[key] = DateTime.UtcNow;
+            if (e.Event == "UserPromptSubmit") { TurnStart[key] = DateTime.UtcNow; return; }
         }
         var seen = hello.Ancestors.Contains(Foreground.Pid) && !Router.Away;
-        if (Decide(e, new(DateTime.UtcNow, last, seen, Settings.Current.ClaudeTextToPhone)) is not { } n) return;
+        if (Decide(e, new(DateTime.UtcNow, last, seen, Settings.Current.ClaudeTextToPhone, start, Settings.Current.StopMinSeconds)) is not { } n) return;
         Notifier.Notify(n.Title, n.Body, n.Priority, Route.Auto, $"hook:{e.Folder}");
     }
 }

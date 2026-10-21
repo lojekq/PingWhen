@@ -48,6 +48,7 @@ public partial class App : Application
         if (!a.Demo) Engine.Current.Restore(Store.LoadWatchers());
         Engine.Current.Start();
         if (!a.Demo) _ = PipeServer.Run(PipeServer.Name, pipeStop.Token);
+        if (!a.Demo || a.Autoplay) ShellHook.Start(Engine.Current.Flashed); // v1.0: "window flashed on the taskbar"
         SystemEvents.PowerModeChanged += (_, pe) => { if (pe.Mode == PowerModes.Resume) Engine.Current.ResetTimers(); };
         SettingsPage.AppSection = () => new PingSettingsView();
         Hotkeys.RegisterInDemo = a.Autoplay; // the scene GIF presses Ctrl+Alt+W; only with the working instance closed

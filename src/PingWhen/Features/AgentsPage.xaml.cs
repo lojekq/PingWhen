@@ -16,7 +16,7 @@ public partial class AgentsPage
     public static string HooksText(string exe)
     {
         var hook = $$"""[{ "hooks": [{ "type": "command", "command": {{JsonSerializer.Serialize(exe)}}, "args": ["--hook"], "timeout": 10 }] }]""";
-        return $"{{ \"hooks\": {{\r\n  \"Stop\":         {hook},\r\n  \"Notification\": {hook}\r\n}}}}";
+        return $"{{ \"hooks\": {{\r\n  \"Stop\":             {hook},\r\n  \"Notification\":     {hook},\r\n  \"UserPromptSubmit\": {hook}\r\n}}}}";
     }
 
     sealed record SessionRow(string Client, string Folder, string Details);
@@ -36,6 +36,8 @@ public partial class AgentsPage
         CopyHooks.Click += (_, _) => Copy(HooksJson.Text);
         ClaudeText.IsChecked = Settings.Current.ClaudeTextToPhone;
         ClaudeText.Click += (_, _) => { Settings.Current.ClaudeTextToPhone = ClaudeText.IsChecked == true; Settings.Save(); };
+        StopMin.Value = Settings.Current.StopMinSeconds;
+        StopMin.ValueChanged += (_, _) => { Settings.Current.StopMinSeconds = (int)Math.Clamp(StopMin.Value ?? 0, 0, 86400); Settings.Save(); };
 
         void Refresh()
         {

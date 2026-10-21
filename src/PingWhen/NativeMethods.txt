@@ -55,3 +55,6 @@ PowerSetRequest
 PowerClearRequest
 POWER_REQUEST_CONTEXT_VERSION
 GetSystemMetrics
+RegisterWindowMessage
+RegisterShellHookWindow
+DeregisterShellHookWindow

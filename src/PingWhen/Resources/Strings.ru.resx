@@ -230,4 +230,18 @@
   <data name="Demo.Lang" xml:space="preserve"><value>ru</value></data>
   <data name="Demo.Push" xml:space="preserve"><value>Готово: ffmpeg · 37 мин
 Процесс завершился, код 0</value></data>
+  <data name="Fire.Flashed" xml:space="preserve"><value>Окно замигало на панели задач</value></data>
+  <data name="Fire.Overdue" xml:space="preserve"><value>Не готово за {1} мин: {0}</value></data>
+  <data name="Fire.Overdue.Body" xml:space="preserve"><value>Всё ещё ждём; PingWhen продолжает следить.</value></data>
+  <data name="Live.WaitingProcess" xml:space="preserve"><value>ждём следующий процесс</value></data>
+  <data name="Outcome.Overdue" xml:space="preserve"><value>просрочено</value></data>
+  <data name="New.Cond.Flashed" xml:space="preserve"><value>Окно замигает на панели задач</value></data>
+  <data name="Cond.Flashed" xml:space="preserve"><value>Замигает на панели задач</value></data>
+  <data name="Cond.Repeat" xml:space="preserve"><value>каждый раз</value></data>
+  <data name="Cond.Deadline" xml:space="preserve"><value>дедлайн {0} мин</value></data>
+  <data name="New.Repeat" xml:space="preserve"><value>Каждый раз (следить и дальше, не чаще раза в минуту)</value></data>
+  <data name="New.Deadline" xml:space="preserve"><value>Сообщить, если не готово за</value></data>
+  <data name="New.Minutes" xml:space="preserve"><value>минут</value></data>
+  <data name="Agents.StopMin" xml:space="preserve"><value>«Claude закончил» — только после хода не короче</value></data>
+  <data name="Agents.StopMin.Note" xml:space="preserve"><value>0 — после каждого хода. Нужен хук UserPromptSubmit из JSON выше.</value></data>
 </root>

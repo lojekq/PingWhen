@@ -29,6 +29,9 @@ public sealed class Engine
         public string Text = "";
         public double Progress;
         public long LastSize = -1, LastSizeAt;
+        public long LastFire = long.MinValue / 2;  // Repeat: at most one report per minute
+        public bool WaitReset;                      // Repeat: the condition must clear before it can fire again
+        public int Ticks;
     }
 
     public static Engine Current { get; set; } = new();
@@ -103,12 +106,22 @@ public sealed class Engine
                 Kind.File => true,
                 Kind.Quiet when w.Processes.Count == 0 => true,
                 Kind.Window => Targets.Alive(w.Processes).Count == 1 && WindowProbe.Title(w.Hwnd, w.Processes[0].Pid, w.WindowClass) is not null,
-                _ => Reattach(w),
+                _ => Reattach(w) || (w.Repeat && Repeatable(w)),
             };
             if (ok) AddNow(w);
             else Report(w, Outcome.Lost, string.Format(Loc.T("Fire.Lost"), w.Title), Loc.T("Fire.Lost.Body"), DateTime.UtcNow - w.CreatedAt);
         }
         dirty = true;
+    });
+
+    /// <summary>Repeat needs a selector: a pid exits once.</summary>
+    static bool Repeatable(Watcher w) => w.Kind != Kind.Process || w.ProcessName is not null || w.CommandLineContains is not null;
+
+    /// <summary>v1.0: the taskbar button of a window flashed (ShellHook).</summary>
+    public void Flashed(long hwnd) => Post(() =>
+    {
+        foreach (var l in live.Where(l => l.W.Kind == Kind.Window && l.W.Until == Until.Flashed && l.W.Hwnd == hwnd).ToList())
+            Hit(l, Outcome.Done, string.Format(Loc.T("Fire.Done"), l.W.Title, Fmt.Duration(Duration(l.W))), Loc.T("Fire.Flashed"));
     });
 
     static bool Reattach(Watcher w)
@@ -137,7 +150,7 @@ public sealed class Engine
         }
         live.Add(l);
         dirty = true;
-        if (w.Kind == Kind.Process) CheckExited(l);
+        if (w.Kind == Kind.Process && !(w.Repeat && Repeatable(w))) CheckExited(l);
     }
 
     void Attach(Live l, ProcRef r)
@@ -163,7 +176,38 @@ public sealed class Engine
         int? code = null;
         try { code = p.ExitCode; } catch { }
         l.Exited[p.Id] = code;
-        CheckExited(l);
+        if (l.W.Repeat && Repeatable(l.W)) ExitedOne(l, p.Id, code);
+        else CheckExited(l);
+    }
+
+    /// <summary>Repeat: this process is done; the watcher keeps waiting for the next one with the same name or command line.</summary>
+    void ExitedOne(Live l, int pid, int? code)
+    {
+        var r = l.W.Processes.FirstOrDefault(x => x.Pid == pid);
+        if (r is not null) l.W.Processes.Remove(r);
+        l.Exited.Remove(pid);
+        l.Handles.RemoveAll(h => { if (h.Id != pid) return false; h.Dispose(); return true; });
+        dirty = true;
+        var name = r is null ? l.W.Title : $"{l.W.Title} ({Path.GetFileNameWithoutExtension(r.Name)})";
+        var dur = r is null ? TimeSpan.Zero : DateTime.UtcNow - r.Started;
+        if (code is not null and not 0)
+            Hit(l, Outcome.Error, string.Format(Loc.T("Fire.Error"), name, code), string.Format(Loc.T("Fire.Exited.Code"), code), dur);
+        else
+            Hit(l, Outcome.Done, string.Format(Loc.T("Fire.Done"), name, Fmt.Duration(dur)),
+                code is null ? Loc.T("Fire.Exited") : string.Format(Loc.T("Fire.Exited.Code"), code), dur);
+    }
+
+    /// <summary>A condition fired: a one-shot watcher finishes; a repeating one reports (at most once a minute) and keeps watching.</summary>
+    void Hit(Live l, Outcome o, string title, string body, TimeSpan? duration = null, bool canRepeat = true)
+    {
+        if (!l.W.Repeat || !canRepeat) { Finish(l, o, title, body, duration); return; }
+        var now = Environment.TickCount64;
+        if (now - l.LastFire >= (long)Watcher.RepeatPause.TotalMilliseconds)
+        {
+            l.LastFire = now;
+            Report(l.W, o, title, body, duration ?? Duration(l.W));
+        }
+        l.WaitReset = true;
     }
 
     void CheckExited(Live l)
@@ -248,7 +292,7 @@ public sealed class Engine
     void Tick()
     {
         var now = Environment.TickCount64;
-        var needTree = live.Any(l => (l.W.Kind == Kind.Process && (l.W.WaitChildren || l.Handles.Count < l.W.Processes.Count))
+        var needTree = live.Any(l => (l.W.Kind == Kind.Process && (l.W.WaitChildren || l.W.Repeat || l.Handles.Count < l.W.Processes.Count))
                                      || (l.W.Kind == Kind.Quiet && l.W.Processes.Count > 0));
         var tree = needTree ? ProcessInfo.Tree() : null;
         metrics.Sample(live.Where(l => l.W.Kind == Kind.Quiet).Select(l => l.W.Metric));
@@ -257,6 +301,12 @@ public sealed class Engine
         {
             var w = l.W;
             if (w.ExpiresAt < DateTime.UtcNow) { Finish(l, Outcome.Cancelled, string.Format(Loc.T("Fire.Expired"), w.Title), ""); continue; }
+            if (w.DeadlineMinutes is { } m && !w.DeadlineSent && DateTime.UtcNow - w.CreatedAt >= TimeSpan.FromMinutes(m))
+            {
+                w.DeadlineSent = true;
+                dirty = true;
+                Report(w, Outcome.Overdue, string.Format(Loc.T("Fire.Overdue"), w.Title, m), Loc.T("Fire.Overdue.Body"), DateTime.UtcNow - w.CreatedAt);
+            }
             switch (w.Kind)
             {
                 case Kind.Process: TickProcess(l, tree!); break;
@@ -275,8 +325,28 @@ public sealed class Engine
         l.Text = string.Join(", ", running.Select(p => p.Name).Distinct()) + (running.Count > 1 ? $" · {running.Count}" : "");
         if (tree is null) return;
         bool Alive(int pid, DateTime? started) => tree[pid] is { } n && Targets.Same(n.Started, started);
-        foreach (var p in w.Processes.Where(p => !l.Exited.ContainsKey(p.Pid) && l.Handles.All(h => h.Id != p.Pid)))
-            if (!Alive(p.Pid, p.Started)) l.Exited[p.Pid] = null; // polled: wait was denied
+        var repeat = w.Repeat && Repeatable(w);
+        foreach (var p in w.Processes.Where(p => !l.Exited.ContainsKey(p.Pid) && l.Handles.All(h => h.Id != p.Pid)).ToList())
+            if (!Alive(p.Pid, p.Started))
+            {
+                if (repeat) ExitedOne(l, p.Pid, null);
+                else l.Exited[p.Pid] = null; // polled: wait was denied
+            }
+        if (repeat)
+        {
+            // ponytail: new processes are found by polling — every tick by name, every 5 s by command line (reading all command
+            // lines costs ~50 ms); a process shorter than that can be missed. Upgrade path: a WMI/ETW process-start trace.
+            if (w.CommandLineContains is null || ++l.Ticks % 5 == 0)
+                foreach (var r in Targets.Match(null, w.ProcessName, w.CommandLineContains, tree))
+                    if (!w.Processes.Any(p => p.Pid == r.Pid && Targets.Same(p.Started, r.Started)))
+                    {
+                        w.Processes.Add(r);
+                        Attach(l, r);
+                        dirty = true;
+                    }
+            if (w.Processes.Count == 0) l.Text = Loc.T("Live.WaitingProcess");
+            return;
+        }
         if (w.WaitChildren)
         {
             foreach (var root in w.Processes.Select(p => p.Pid).Concat(l.Children.Keys).ToList())
@@ -295,10 +365,20 @@ public sealed class Engine
         var w = l.W;
         var title = WindowProbe.Title(w.Hwnd, w.Processes.FirstOrDefault()?.Pid ?? 0, w.WindowClass);
         l.Text = title ?? "";
-        if (!Conditions.Window(w.Until, title, w.WindowTitle, w.Pattern, w.IsRegex)) return;
+        var fired = Conditions.Window(w.Until, title, w.WindowTitle, w.Pattern, w.IsRegex);
+        if (l.WaitReset && title is not null)
+        {
+            if (!fired) l.WaitReset = false; // repeat: armed again once the title no longer matches
+            return;
+        }
+        if (!fired) return;
         if (title is null) Finish(l, Outcome.Done, string.Format(Loc.T("Fire.Done"), w.Title, Fmt.Duration(Duration(w))), Loc.T("Fire.WindowClosed"));
-        else Finish(l, Outcome.Done, string.Format(Loc.T("Fire.Done"), w.Title, Fmt.Duration(Duration(w))),
-            string.Format(Loc.T(w.Until == Until.TitleChanged ? "Fire.TitleChanged" : "Fire.TitleMatched"), Fmt.Cut(title, 200)));
+        else
+        {
+            Hit(l, Outcome.Done, string.Format(Loc.T("Fire.Done"), w.Title, Fmt.Duration(Duration(w))),
+                string.Format(Loc.T(w.Until == Until.TitleChanged ? "Fire.TitleChanged" : "Fire.TitleMatched"), Fmt.Cut(title, 200)));
+            if (w.Until == Until.TitleChanged) { w.WindowTitle = title; l.WaitReset = false; dirty = true; } // the new title is the baseline
+        }
     }
 
     void TickFile(Live l, long now)
@@ -310,14 +390,21 @@ public sealed class Engine
         {
             case Until.Appeared:
                 l.Text = Loc.T(size >= 0 ? "Live.Exists" : "Live.Missing");
-                if (size >= 0) Finish(l, Outcome.Done, done, Loc.T("Fire.FileAppeared"));
+                if (size < 0) l.WaitReset = false;
+                else if (!l.WaitReset) Hit(l, Outcome.Done, done, Loc.T("Fire.FileAppeared"));
                 return;
             case Until.Disappeared:
                 l.Text = size >= 0 ? Fmt.Bytes(size) : Loc.T("Live.Missing");
-                if (size < 0) Finish(l, Outcome.Done, done, Loc.T("Fire.FileGone"));
+                if (size >= 0) l.WaitReset = false;
+                else if (!l.WaitReset) Hit(l, Outcome.Done, done, Loc.T("Fire.FileGone"));
                 return;
         }
-        if (size < 0) { Finish(l, Outcome.Done, done, Loc.T("Fire.FileGone")); return; }
+        if (size < 0)
+        {
+            if (!w.Repeat) { Finish(l, Outcome.Done, done, Loc.T("Fire.FileGone")); return; }
+            (l.Text, l.G, l.Progress) = (Loc.T("Live.Missing"), new(0, false, null, 0), 0); // repeat: wait for the next file
+            return;
+        }
         var rate = l.LastSize >= 0 && now > l.LastSizeAt ? Math.Max(0, size - l.LastSize) * 1000.0 / (now - l.LastSizeAt) : 0;
         (l.LastSize, l.LastSizeAt) = (size, now);
         (l.G, var fired) = Conditions.Growth(l.G, size, w.QuietSeconds, now);
@@ -326,7 +413,9 @@ public sealed class Engine
         l.Text = !l.G.GrowthSeen ? $"{Fmt.Bytes(size)} · {Loc.T("Live.WaitingGrowth")}"
             : l.G.StableSince is null ? $"{Fmt.Bytes((long)rate)}/{Loc.T("Unit.S")} · {Fmt.Bytes(size)}"
             : $"{Fmt.Bytes(size)} · {string.Format(Loc.T("Live.Stable"), stable, w.QuietSeconds)}";
-        if (fired) Finish(l, Outcome.Done, done, string.Format(Loc.T("Fire.Stopped"), Fmt.Bytes(size)));
+        if (!fired) return;
+        Hit(l, Outcome.Done, done, string.Format(Loc.T("Fire.Stopped"), Fmt.Bytes(size)));
+        l.G = new(size, false, null, 0); // repeat: wait for growth again
     }
 
     void TickQuiet(Live l, ProcessTree? tree, long now)
@@ -351,9 +440,10 @@ public sealed class Engine
         l.Text = $"{Fmt.Metric(w.Metric, value)} · " + (l.Q.Armed
             ? string.Format(Loc.T("Live.Quiet"), quiet, w.QuietSeconds)
             : string.Format(Loc.T("Live.WaitingAbove"), Fmt.Metric(w.Metric, w.Below)));
-        if (fired)
-            Finish(l, Outcome.Quiet, string.Format(Loc.T("Fire.Quiet"), w.Title, Fmt.Duration(Duration(w))),
-                string.Format(Loc.T("Fire.Quiet.Body"), Fmt.MetricName(w.Metric), Fmt.Metric(w.Metric, w.Below), w.QuietSeconds));
+        if (!fired) return;
+        Hit(l, Outcome.Quiet, string.Format(Loc.T("Fire.Quiet"), w.Title, Fmt.Duration(Duration(w))),
+            string.Format(Loc.T("Fire.Quiet.Body"), Fmt.MetricName(w.Metric), Fmt.Metric(w.Metric, w.Below), w.QuietSeconds));
+        l.Q = new(false, null, 0); // repeat: needs activity above the threshold again
     }
 }
 
@@ -369,10 +459,10 @@ public static class Targets
         ProcessInfo.StartTime(pid) is { } t ? new ProcRef(pid, t, Path.GetFileName(ProcessInfo.ExePath(pid) ?? $"pid {pid}")) : null;
 
     /// <summary>All matching processes right now (not this app). Name with or without ".exe", command line substring ignoring case.</summary>
-    public static List<ProcRef> Match(int? pid, string? name, string? commandLineContains)
+    public static List<ProcRef> Match(int? pid, string? name, string? commandLineContains, ProcessTree? tree = null)
     {
         if (pid is { } id) return ByPid(id) is { } r ? [r] : [];
-        var tree = ProcessInfo.Tree();
+        tree ??= ProcessInfo.Tree();
         var self = Environment.ProcessId;
         var exe = name is null ? null : name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? name : name + ".exe";
         return tree.All

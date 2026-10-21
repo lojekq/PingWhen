@@ -5,11 +5,11 @@ using System.Text.Json.Serialization;
 namespace PingWhen.Features;
 
 public enum Kind { Process, Window, File, Quiet }
-public enum Until { Exited, Closed, TitleChanged, TitleMatches, StoppedGrowing, Appeared, Disappeared, Quiet }
+public enum Until { Exited, Closed, TitleChanged, TitleMatches, StoppedGrowing, Appeared, Disappeared, Quiet, Flashed }
 public enum Metric { Cpu, Gpu, Disk, Net }
 public enum Route { Auto, Pc, Phone, Both }
 public enum Priority { Low, Default, High }
-public enum Outcome { Done, Error, Quiet, Lost, Cancelled, Notify }
+public enum Outcome { Done, Error, Quiet, Lost, Cancelled, Notify, Overdue }
 
 /// <summary>A process as matched when the watcher was made. Started (UTC) guards against pid reuse.</summary>
 public sealed record ProcRef(int Pid, DateTime Started, string Name);
@@ -50,6 +50,14 @@ public sealed class Watcher
     public string CreatedBy { get; set; } = "ui";       // ui | cli | mcp:<client>/<folder>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? ExpiresAt { get; set; }
+
+    /// <summary>v1.0: keeps watching after it fires ("every time ffmpeg.exe exits"), at most once a minute.</summary>
+    public bool Repeat { get; set; }
+    /// <summary>v1.0: "not done within X min" once, then keeps watching (catches stuck jobs).</summary>
+    public int? DeadlineMinutes { get; set; }
+    public bool DeadlineSent { get; set; }
+
+    public static TimeSpan RepeatPause { get; internal set; } = TimeSpan.FromSeconds(60); // tests shorten it
 
     public static double DefaultBelow(Metric m) => m switch { Metric.Disk => 1, Metric.Net => 100, _ => 5 };
     public static int DefaultSeconds(Metric m) => m == Metric.Net ? 60 : 30;
@@ -154,13 +162,17 @@ public static class Describe
     public static string Condition(Watcher w)
     {
         string T(string k) => Shell.Loc.T(k);
-        return w.Kind switch
+        var extra = (w.Repeat ? " · " + T("Cond.Repeat") : "") + (w.DeadlineMinutes is { } m ? " · " + string.Format(T("Cond.Deadline"), m) : "");
+        return Base() + extra;
+
+        string Base() => w.Kind switch
         {
             Kind.Process => T(w.WaitChildren ? "Cond.ExitedChildren" : "Cond.Exited"),
             Kind.Window => w.Until switch
             {
                 Until.TitleChanged => T("Cond.TitleChanged"),
                 Until.TitleMatches => string.Format(T(w.IsRegex ? "Cond.TitleRegex" : "Cond.TitleContains"), w.Pattern),
+                Until.Flashed => T("Cond.Flashed"),
                 _ => T("Cond.Closed"),
             },
             Kind.File => w.Until switch

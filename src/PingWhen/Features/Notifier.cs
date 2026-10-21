@@ -17,6 +17,7 @@ namespace PingWhen.Shell
         public int AwayMinutes { get; set; } = 3;
         public bool PhoneWhenBusy { get; set; } = true;
         public bool ClaudeTextToPhone { get; set; }
+        public int StopMinSeconds { get; set; }   // v1.0: "Claude finished" only after turns this long (0 = every turn)
     }
 }
 

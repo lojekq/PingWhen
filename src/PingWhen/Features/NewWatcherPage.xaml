@@ -115,6 +115,12 @@
                     </StackPanel>
                     <CheckBox x:Name="KeepAwakeBox" Content="{l:T New.KeepAwake}" />
                     <CheckBox x:Name="WaitChildrenBox" Content="{l:T New.WaitChildren}" Margin="0,4,0,0" />
+                    <CheckBox x:Name="RepeatBox" Content="{l:T New.Repeat}" Margin="0,4,0,0" />
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <CheckBox x:Name="DeadlineBox" Content="{l:T New.Deadline}" VerticalAlignment="Center" />
+                        <ui:NumberBox x:Name="DeadlineMinutes" MinWidth="120" Minimum="1" Maximum="10080" MaxDecimalPlaces="0" SmallChange="5" Value="60" ClearButtonEnabled="False" Margin="8,0,0,0" />
+                        <ui:TextBlock Text="{l:T New.Minutes}" VerticalAlignment="Center" Margin="8,0,0,0" />
+                    </StackPanel>
                 </StackPanel>
             </ui:Card>
 

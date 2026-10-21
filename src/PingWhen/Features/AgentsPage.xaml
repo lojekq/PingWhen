@@ -58,6 +58,12 @@
                     <TextBox x:Name="HooksJson" IsReadOnly="True" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" FontFamily="Cascadia Mono, Consolas" FontSize="12" />
                     <CheckBox x:Name="ClaudeText" Content="{l:T Agents.ClaudeText}" Margin="0,12,0,0" />
                     <ui:TextBlock Text="{l:T Agents.ClaudeText.Note}" FontTypography="Caption" Appearance="Tertiary" TextWrapping="Wrap" Margin="28,0,0,0" />
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                        <ui:TextBlock Text="{l:T Agents.StopMin}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <ui:NumberBox x:Name="StopMin" MinWidth="120" Minimum="0" Maximum="86400" MaxDecimalPlaces="0" SmallChange="30" ClearButtonEnabled="False" />
+                        <ui:TextBlock Text="{l:T New.Seconds}" VerticalAlignment="Center" Margin="8,0,0,0" />
+                    </StackPanel>
+                    <ui:TextBlock Text="{l:T Agents.StopMin.Note}" FontTypography="Caption" Appearance="Tertiary" TextWrapping="Wrap" />
                 </StackPanel>
             </ui:Card>
 

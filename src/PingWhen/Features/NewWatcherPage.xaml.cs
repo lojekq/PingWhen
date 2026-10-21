@@ -19,7 +19,7 @@ public sealed class NewRequest
 /// <summary>Target → condition → parameters → notification → Watch (spec §7, page 2).</summary>
 public partial class NewWatcherPage
 {
-    enum Cond { Closed, TitleChanged, TitleMatches, Exited, Quiet, StoppedGrowing, Appeared, Disappeared }
+    enum Cond { Closed, TitleChanged, TitleMatches, Flashed, Exited, Quiet, StoppedGrowing, Appeared, Disappeared }
     sealed record Choice<T>(T Value, string Text);
     sealed record Item(object Value, string Text, ImageSource? Icon);
     sealed record CmdItem(Terminals.Command? Cmd, string Text, SymbolRegular Symbol);
@@ -92,12 +92,15 @@ public partial class NewWatcherPage
             RouteBox.SelectedIndex = (int)w.Route;
             KeepAwakeBox.IsChecked = w.KeepAwake;
             WaitChildrenBox.IsChecked = w.WaitChildren;
+            RepeatBox.IsChecked = w.Repeat;
+            DeadlineBox.IsChecked = w.DeadlineMinutes is not null;
+            DeadlineMinutes.Value = w.DeadlineMinutes ?? 60;
             Pattern.Text = w.Pattern ?? "";
             IsRegex.IsChecked = w.IsRegex;
             AlreadyRunning.IsChecked = w.AlreadyRunning;
             RefreshConditions(w.Kind switch
             {
-                Kind.Window => w.Until switch { Until.TitleChanged => Cond.TitleChanged, Until.TitleMatches => Cond.TitleMatches, _ => Cond.Closed },
+                Kind.Window => w.Until switch { Until.TitleChanged => Cond.TitleChanged, Until.TitleMatches => Cond.TitleMatches, Until.Flashed => Cond.Flashed, _ => Cond.Closed },
                 Kind.File => w.Until switch { Until.Appeared => Cond.Appeared, Until.Disappeared => Cond.Disappeared, _ => Cond.StoppedGrowing },
                 Kind.Quiet => Cond.Quiet,
                 _ => Cond.Exited,
@@ -114,6 +117,8 @@ public partial class NewWatcherPage
         WindowBox.SelectedIndex = r.Window is { } t2 ? windows.FindIndex(x => x.Hwnd == t2.Hwnd) : windows.Count > 0 ? 0 : -1;
         KeepAwakeBox.IsChecked = false;
         WaitChildrenBox.IsChecked = false;
+        RepeatBox.IsChecked = false;
+        DeadlineBox.IsChecked = false;
         RouteBox.SelectedIndex = 0;
         var kind = r.Kind ?? Kind.Window;
         (kind switch { Kind.Process => KindProcess, Kind.File => KindFile, Kind.Quiet => KindSystem, _ => KindWindow }).IsChecked = true;
@@ -190,11 +195,11 @@ public partial class NewWatcherPage
     void RefreshConditions(Cond? prefer = null)
     {
         Cond[] list = editing is { } w
-            ? w.Kind switch { Kind.Window => [Cond.Closed, Cond.TitleChanged, Cond.TitleMatches], Kind.File => [Cond.StoppedGrowing, Cond.Appeared, Cond.Disappeared], Kind.Quiet => [Cond.Quiet], _ => [Cond.Exited] }
+            ? w.Kind switch { Kind.Window => [Cond.Closed, Cond.TitleChanged, Cond.TitleMatches, Cond.Flashed], Kind.File => [Cond.StoppedGrowing, Cond.Appeared, Cond.Disappeared], Kind.Quiet => [Cond.Quiet], _ => [Cond.Exited] }
             : SelectedKind switch
             {
                 Kind.Window when SelectedCommand is not null => [Cond.Exited, Cond.Quiet],
-                Kind.Window => [Cond.Closed, Cond.TitleChanged, Cond.TitleMatches, Cond.Exited, Cond.Quiet],
+                Kind.Window => [Cond.Closed, Cond.TitleChanged, Cond.TitleMatches, Cond.Flashed, Cond.Exited, Cond.Quiet],
                 Kind.Process => [Cond.Exited, Cond.Quiet],
                 Kind.File => [Cond.StoppedGrowing, Cond.Appeared, Cond.Disappeared],
                 _ => [Cond.Quiet],
@@ -214,6 +219,7 @@ public partial class NewWatcherPage
         MetricPanel.Visibility = AlreadyRunning.Visibility = c == Cond.Quiet ? Visibility.Visible : Visibility.Collapsed;
         SecondsPanel.Visibility = c is Cond.Quiet or Cond.StoppedGrowing ? Visibility.Visible : Visibility.Collapsed;
         WaitChildrenBox.Visibility = c == Cond.Exited ? Visibility.Visible : Visibility.Collapsed;
+        RepeatBox.Visibility = c == Cond.Closed ? Visibility.Collapsed : Visibility.Visible; // a closed window can't close again
         if (c == Cond.Quiet)
         {
             var metrics = SystemTarget ? Enum.GetValues<Metric>() : [Metric.Cpu, Metric.Gpu, Metric.Disk]; // network per process needs admin
@@ -284,7 +290,7 @@ public partial class NewWatcherPage
         var c = SelectedCond ?? Cond.Exited;
         w.Until = c switch
         {
-            Cond.Closed => Until.Closed, Cond.TitleChanged => Until.TitleChanged, Cond.TitleMatches => Until.TitleMatches,
+            Cond.Closed => Until.Closed, Cond.TitleChanged => Until.TitleChanged, Cond.TitleMatches => Until.TitleMatches, Cond.Flashed => Until.Flashed,
             Cond.StoppedGrowing => Until.StoppedGrowing, Cond.Appeared => Until.Appeared, Cond.Disappeared => Until.Disappeared,
             Cond.Quiet => Until.Quiet, _ => Until.Exited,
         };
@@ -306,6 +312,10 @@ public partial class NewWatcherPage
         w.Route = (RouteBox.SelectedItem as Choice<Route>)?.Value ?? Route.Auto;
         w.KeepAwake = KeepAwakeBox.IsChecked == true;
         w.WaitChildren = c == Cond.Exited && WaitChildrenBox.IsChecked == true;
+        w.Repeat = c != Cond.Closed && RepeatBox.IsChecked == true;
+        if (w.Repeat && w.Kind == Kind.Process && w.ProcessName is null && w.CommandLineContains is null)
+            w.ProcessName = w.Processes.FirstOrDefault()?.Name; // "every time it exits" needs a name: a pid exits once
+        w.DeadlineMinutes = DeadlineBox.IsChecked == true ? (int)Math.Max(1, DeadlineMinutes.Value ?? 60) : null;
         return true;
     }
 
