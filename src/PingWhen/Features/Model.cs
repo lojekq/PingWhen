@@ -62,7 +62,7 @@ public sealed class Watcher
     public double RegionY { get; set; }
     public double RegionW { get; set; } = 1;
     public double RegionH { get; set; } = 1;
-    public Frames.Rect Region => new(RegionX, RegionY, RegionW, RegionH);
+    [JsonIgnore] public Frames.Rect Region => new(RegionX, RegionY, RegionW, RegionH);
     /// <summary>v1.0: a JPEG of the window (or region) goes with the notification. Off by default: it leaves the PC.</summary>
     public bool Screenshot { get; set; }
 

@@ -23,7 +23,7 @@ namespace PingWhen.Features
         public string? Topic { get; set; }
         public string? Token { get; set; }   // DPAPI, base64, like the Telegram token
 
-        public bool Ready => Enabled && !string.IsNullOrWhiteSpace(Topic) && Uri.TryCreate(Server, UriKind.Absolute, out _);
+        [System.Text.Json.Serialization.JsonIgnore] public bool Ready => Enabled && !string.IsNullOrWhiteSpace(Topic) && Uri.TryCreate(Server, UriKind.Absolute, out _);
 
         public string? UnprotectToken()
         {
@@ -37,7 +37,7 @@ namespace PingWhen.Features
             string.Create(24, 0, (s, _) => { for (var i = 0; i < s.Length; i++) s[i] = "abcdefghijkmnopqrstuvwxyz23456789"[RandomNumberGenerator.GetInt32(33)]; });
 
         /// <summary>The Android/iOS app link for the QR code: ntfy://&lt;host&gt;/&lt;topic&gt;?display=PingWhen.</summary>
-        public string SubscribeLink => $"ntfy://{new Uri(Server).Authority}/{Topic}?display={AppInfo.DisplayName}";
+        [System.Text.Json.Serialization.JsonIgnore] public string SubscribeLink => $"ntfy://{new Uri(Server).Authority}/{Topic}?display={AppInfo.DisplayName}";
     }
 
     /// <summary>

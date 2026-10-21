@@ -27,7 +27,7 @@ namespace PingWhen.Features
         public string? FirstName { get; set; }
         public DateTime? PairedAt { get; set; }
 
-        public bool Paired => Token is not null && ChatId is not null;
+        [System.Text.Json.Serialization.JsonIgnore] public bool Paired => Token is not null && ChatId is not null;
 
         public static string Protect(string token) =>
             Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(token), null, DataProtectionScope.CurrentUser));
