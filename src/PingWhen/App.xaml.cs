@@ -26,6 +26,7 @@ public partial class App : Application
     {
         base.OnStartup(e);
         var a = Args.Current;
+        var fromCli = Cli.StartedByCli(); // first thing: the CLI closes the event as soon as the pipe answers
         Crash.Install(this);
         if (!SingleInstance.Acquire(() => Dispatcher.BeginInvoke(() => ShowMain(null))))
         {
@@ -99,7 +100,7 @@ public partial class App : Application
         };
         Updates.Start();
 
-        if (!a.Background && !Cli.StartedByCli()) ShowMain(a.Page); // started by --mcp/--hook/--notify: stay in the tray
+        if (!a.Background && !fromCli) ShowMain(a.Page); // started by --mcp/--hook/--notify: stay in the tray
     }
 
     public static void ShowMain(string? page)
