@@ -1,0 +1,66 @@
+using System.Text.Json;
+using System.Windows;
+using PingWhen.Shell;
+
+namespace PingWhen.Features;
+
+/// <summary>Connect Claude Code (and other MCP clients): exact command and hooks JSON with the real exe path (spec §7, page 4).</summary>
+public partial class AgentsPage
+{
+    /// <summary>--demo shows a neutral path instead of the real one.</summary>
+    public static string ExeForCommands => Args.Current.Demo ? @"C:\Users\demo\AppData\Local\Programs\PingWhen\PingWhen.exe" : AppInfo.ExePath;
+
+    public static string McpText(string exe) =>
+        $"claude mcp add --scope user --transport stdio pingwhen -- \"{exe}\" --mcp\r\nclaude mcp list";
+
+    public static string HooksText(string exe)
+    {
+        object Hook() => new[] { new { hooks = new[] { new { type = "command", command = exe, args = new[] { "--hook" }, timeout = 10 } } } };
+        return JsonSerializer.Serialize(new { hooks = new { Stop = Hook(), Notification = Hook() } }, new JsonSerializerOptions { WriteIndented = true });
+    }
+
+    sealed record SessionRow(string Client, string Folder, string Details);
+    sealed record RecentRow(string Time, string Title);
+
+    /// <summary>--demo: fictitious sessions for the screenshot.</summary>
+    public static List<(string Client, string Folder, int Watchers, int Minutes)> DemoSessions { get; } = [];
+
+    public AgentsPage()
+    {
+        InitializeComponent();
+        var exe = ExeForCommands;
+        MoveBar.IsOpen = !Args.Current.Demo && !Install.IsInstalled;
+        McpCommand.Text = McpText(exe);
+        HooksJson.Text = HooksText(exe);
+        CopyMcp.Click += (_, _) => Copy(McpCommand.Text);
+        CopyHooks.Click += (_, _) => Copy(HooksJson.Text);
+        ClaudeText.IsChecked = Settings.Current.ClaudeTextToPhone;
+        ClaudeText.Click += (_, _) => { Settings.Current.ClaudeTextToPhone = ClaudeText.IsChecked == true; Settings.Save(); };
+
+        void Refresh()
+        {
+            var watchers = Engine.Current.Snapshot;
+            var rows = PipeServer.Sessions.Select(s => new SessionRow(s.Client, s.Folder,
+                    string.Format(Loc.T("Agents.SessionDetails"), watchers.Count(v => v.W.CreatedBy == s.Key), Fmt.Duration(DateTime.Now - s.Since))))
+                .Concat(DemoSessions.Select(d => new SessionRow(d.Client, d.Folder, string.Format(Loc.T("Agents.SessionDetails"), d.Watchers, Fmt.Duration(TimeSpan.FromMinutes(d.Minutes))))))
+                .ToList();
+            SessionList.ItemsSource = rows;
+            PipeStatus.Text = Args.Current.Demo || PipeServer.Running
+                ? string.Format(Loc.T("Agents.PipeOn"), rows.Count)
+                : Loc.T("Agents.PipeOff");
+            var recent = Notifier.History.Where(h => h.Watcher.StartsWith("mcp:") || h.Watcher.StartsWith("hook:") || h.Watcher.Contains(" · ")).Take(8)
+                .Select(h => new RecentRow(new HistoryPage.Row(h).Time, h.Title)).ToList();
+            RecentList.ItemsSource = recent;
+            RecentEmpty.Visibility = recent.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+        PipeServer.Sessions.CollectionChanged += (_, _) => Refresh();
+        Notifier.History.CollectionChanged += (_, _) => Refresh();
+        Refresh();
+    }
+
+    static void Copy(string text)
+    {
+        try { Clipboard.SetText(text); }
+        catch (Exception e) { Log.Warn("clipboard busy", e); }
+    }
+}

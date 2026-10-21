@@ -54,3 +54,4 @@ PowerCreateRequest
 PowerSetRequest
 PowerClearRequest
 POWER_REQUEST_CONTEXT_VERSION
+GetSystemMetrics

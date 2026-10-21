@@ -14,7 +14,7 @@ param(
 $ErrorActionPreference = 'Stop'; $PSNativeCommandUseErrorActionPreference = $true
 $App = (Get-ChildItem src -Directory | Select-Object -First 1).Name
 dotnet build "src/$App" -c Release | Out-Null
-$exe = "src/$App/bin/Release/net10.0-windows/$App.exe"
+$exe = "src/$App/bin/Release/net10.0-windows10.0.26100.0/$App.exe"
 $raw = "$env:TEMP\$App-raw.mkv"; $pal = "$env:TEMP\$App-pal.png"   # own names: sessions record in parallel
 $rect = "$env:TEMP\$App-rect.txt"; Remove-Item $rect -ErrorAction Ignore
 $gif = $Out

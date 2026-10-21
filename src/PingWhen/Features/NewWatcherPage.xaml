@@ -1,0 +1,127 @@
+<Page x:Class="PingWhen.Features.NewWatcherPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:l="clr-namespace:PingWhen.Shell">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24,12,24,24" MaxWidth="900">
+            <ui:TextBlock x:Name="Heading" FontTypography="Title" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Text="{l:T Page.New}" Margin="0,0,0,16" />
+
+            <!-- 1. Target -->
+            <ui:Card Margin="0,0,0,4">
+                <StackPanel>
+                    <ui:TextBlock FontTypography="BodyStrong" Text="{l:T New.Target}" Margin="0,0,0,8" />
+                    <StackPanel x:Name="KindPanel" Orientation="Horizontal" Margin="0,0,0,12">
+                        <RadioButton x:Name="KindWindow" GroupName="kind" Content="{l:T New.Kind.Window}" Margin="0,0,16,0" />
+                        <RadioButton x:Name="KindProcess" GroupName="kind" Content="{l:T New.Kind.Process}" Margin="0,0,16,0" />
+                        <RadioButton x:Name="KindFile" GroupName="kind" Content="{l:T New.Kind.File}" Margin="0,0,16,0" />
+                        <RadioButton x:Name="KindSystem" GroupName="kind" Content="{l:T New.Kind.System}" />
+                    </StackPanel>
+
+                    <StackPanel x:Name="WindowPanel">
+                        <ComboBox x:Name="WindowBox" HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,8,0" />
+                                        <TextBlock Text="{Binding Text}" TextTrimming="CharacterEllipsis" MaxWidth="720" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <StackPanel x:Name="CommandsPanel" Margin="0,12,0,0">
+                            <ui:TextBlock Text="{l:T New.Commands}" Appearance="Secondary" Margin="0,0,0,4" />
+                            <ListBox x:Name="CommandsBox" MaxHeight="200">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="{Binding Symbol}" Margin="0,0,8,0" />
+                                            <TextBlock Text="{Binding Text}" TextTrimming="CharacterEllipsis" MaxWidth="720" FontFamily="Cascadia Mono, Consolas" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel x:Name="ProcessPanel">
+                        <ui:TextBox x:Name="ProcFilter" PlaceholderText="{l:T New.ProcFilter}" Icon="{ui:SymbolIcon Search24}" Margin="0,0,0,4" />
+                        <ListBox x:Name="ProcBox" Height="220">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,8,0" />
+                                        <TextBlock Text="{Binding Text}" TextTrimming="CharacterEllipsis" MaxWidth="720" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <RadioButton x:Name="ProcThis" GroupName="procsel" Content="{l:T New.ProcThis}" IsChecked="True" Margin="0,0,16,0" />
+                            <RadioButton x:Name="ProcAll" GroupName="procsel" Content="{l:T New.ProcAll}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel x:Name="FilePanel">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBox x:Name="FilePath" PlaceholderText="D:\Downloads\movie.mkv.crdownload" />
+                            <ui:Button x:Name="Browse" Grid.Column="1" Content="{l:T New.Browse}" Margin="8,0,0,0" />
+                        </Grid>
+                        <ui:TextBlock Text="{l:T New.FileHint}" FontTypography="Caption" Appearance="Tertiary" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    </StackPanel>
+
+                    <ui:TextBlock x:Name="SystemText" Text="{l:T New.SystemHint}" Appearance="Secondary" TextWrapping="Wrap" />
+                    <ui:TextBlock x:Name="EditTarget" Appearance="Secondary" TextWrapping="Wrap" />
+                </StackPanel>
+            </ui:Card>
+
+            <!-- 2. Condition and parameters -->
+            <ui:Card Margin="0,0,0,4">
+                <StackPanel>
+                    <ui:TextBlock FontTypography="BodyStrong" Text="{l:T New.Condition}" Margin="0,0,0,8" />
+                    <ComboBox x:Name="CondBox" HorizontalAlignment="Left" MinWidth="320" DisplayMemberPath="Text" />
+                    <StackPanel x:Name="PatternPanel" Orientation="Horizontal" Margin="0,8,0,0">
+                        <ui:TextBox x:Name="Pattern" MinWidth="320" PlaceholderText="Done" />
+                        <CheckBox x:Name="IsRegex" Content="{l:T New.Regex}" Margin="12,0,0,0" />
+                    </StackPanel>
+                    <StackPanel x:Name="MetricPanel" Orientation="Horizontal" Margin="0,8,0,0">
+                        <ComboBox x:Name="MetricBox" MinWidth="120" DisplayMemberPath="Text" />
+                        <ui:TextBlock Text="{l:T New.Below}" VerticalAlignment="Center" Margin="12,0,8,0" />
+                        <ui:NumberBox x:Name="BelowBox" MinWidth="120" Minimum="0.1" SmallChange="1" ClearButtonEnabled="False" />
+                        <ui:TextBlock x:Name="BelowUnit" VerticalAlignment="Center" Margin="8,0,0,0" />
+                    </StackPanel>
+                    <StackPanel x:Name="SecondsPanel" Orientation="Horizontal" Margin="0,8,0,0">
+                        <ui:TextBlock Text="{l:T New.For}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <ui:NumberBox x:Name="SecondsBox" MinWidth="120" Minimum="5" Maximum="86400" SmallChange="5" MaxDecimalPlaces="0" ClearButtonEnabled="False" />
+                        <ui:TextBlock Text="{l:T New.Seconds}" VerticalAlignment="Center" Margin="8,0,0,0" />
+                    </StackPanel>
+                    <CheckBox x:Name="AlreadyRunning" Content="{l:T New.AlreadyRunning}" Margin="0,8,0,0" />
+                </StackPanel>
+            </ui:Card>
+
+            <!-- 3. Notification -->
+            <ui:Card Margin="0,0,0,4">
+                <StackPanel>
+                    <ui:TextBlock FontTypography="BodyStrong" Text="{l:T New.Notification}" Margin="0,0,0,8" />
+                    <ui:TextBox x:Name="TitleBox" PlaceholderText="{l:T New.TitlePlaceholder}" Margin="0,0,0,8" MaxLength="120" />
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <ui:TextBlock Text="{l:T New.Route}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <ComboBox x:Name="RouteBox" MinWidth="220" DisplayMemberPath="Text" />
+                    </StackPanel>
+                    <CheckBox x:Name="KeepAwakeBox" Content="{l:T New.KeepAwake}" />
+                    <CheckBox x:Name="WaitChildrenBox" Content="{l:T New.WaitChildren}" Margin="0,4,0,0" />
+                </StackPanel>
+            </ui:Card>
+
+            <ui:InfoBar x:Name="ErrorBar" Severity="Error" IsClosable="True" Margin="0,8,0,0" />
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                <ui:Button x:Name="WatchButton" Appearance="Primary" Content="{l:T New.Watch}" IsDefault="True" MinWidth="120" Icon="{ui:SymbolIcon Eye24}" />
+                <ui:Button x:Name="CancelButton" Content="{l:T New.Cancel}" Margin="8,0,0,0" IsCancel="True" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

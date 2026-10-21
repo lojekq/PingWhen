@@ -253,6 +253,39 @@ public class McpTests
         }
     }
 
+    /// <summary>The real exe as Claude Code starts it: stdio ↔ --mcp relay ↔ pipe ↔ MCP server (here in the test process).</summary>
+    [TestMethod]
+    public async Task StdioRelayOfTheRealExe()
+    {
+        if (Mutex.TryOpenExisting($@"Local\lojekq.{AppInfo.Name}", out var m)) { m.Dispose(); Assert.Inconclusive("a PingWhen tray is running"); }
+        var notes = new List<Note>();
+        Notifier.Sink = n => { lock (notes) notes.Add(n); return (true, false); };
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        var server = PipeServer.Run(PipeServer.Name, cts.Token);
+        try
+        {
+            var cwd = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "PingWhen.Tests", "mlink")).FullName;
+            var transport = new StdioClientTransport(new StdioClientTransportOptions
+            {
+                Command = Path.Combine(AppContext.BaseDirectory, "PingWhen.exe"), Arguments = ["--mcp"], Name = "pingwhen", WorkingDirectory = cwd,
+            });
+            await using var client = await McpClient.CreateAsync(transport, cancellationToken: cts.Token);
+            Assert.AreEqual("pingwhen", client.ServerInfo.Name);
+            StringAssert.Contains(client.ServerInstructions, "watch_process");
+            var r = await client.CallToolAsync("notify", new Dictionary<string, object?> { ["title"] = "via stdio" }, cancellationToken: cts.Token);
+            Assert.IsFalse(r.IsError ?? false);
+            lock (notes) Assert.AreEqual("mlink: via stdio", notes.Single().Title); // folder from the relay's cwd
+            var list = await client.CallToolAsync("list_watchers", cancellationToken: cts.Token);
+            Assert.IsFalse(list.IsError ?? false);
+        }
+        finally
+        {
+            Notifier.Sink = null;
+            cts.Cancel();
+            await server;
+        }
+    }
+
     [TestMethod]
     public async Task WrongHelloVersionIsRefused()
     {

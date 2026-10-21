@@ -68,6 +68,18 @@ public sealed class Engine
         return true;
     });
 
+    /// <summary>Edit: the old watcher goes away silently, the new one (same Id) starts fresh.</summary>
+    public Task<Watcher> Replace(Watcher w) => Invoke(() =>
+    {
+        if (live.Find(l => l.W.Id == w.Id) is { } old)
+        {
+            live.Remove(old);
+            foreach (var h in old.Handles) h.Dispose();
+        }
+        AddNow(w);
+        return w;
+    });
+
     public Task<List<Watcher>> List() => Invoke(() => live.Select(l => l.W).ToList());
 
     /// <summary>After resume from sleep: quiet and growth timers start over (no false "went quiet" right after wake).</summary>
@@ -117,6 +129,12 @@ public sealed class Engine
         if (w.Kind == Kind.File && w.Path is not null) l.G = new(Math.Max(0, FileProbe.Size(w.Path)), false, null, 0);
         if (w.Kind == Kind.Process)
             foreach (var p in w.Processes) Attach(l, p);
+        if (w.Kind == Kind.Process && w.WaitChildren)
+        {
+            var tree = ProcessInfo.Tree();
+            foreach (var p in w.Processes)
+                foreach (var d in tree.Descendants(p.Pid)) l.Children.TryAdd(d.Pid, d.Started);
+        }
         live.Add(l);
         dirty = true;
         if (w.Kind == Kind.Process) CheckExited(l);

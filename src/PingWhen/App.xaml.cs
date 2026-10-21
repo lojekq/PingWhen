@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Windows;
+using Microsoft.Win32;
 using PingWhen.Demo;
 using PingWhen.Features;
 using PingWhen.Shell;
@@ -19,6 +20,7 @@ public partial class App : Application
 
     static MainWindow? window;
     static bool quitting;
+    static readonly CancellationTokenSource pipeStop = new();
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -34,12 +36,33 @@ public partial class App : Application
         Loc.Apply(Settings.Current.Language);
         Log.Info($"start {AppInfo.Version}{(a.Unknown.Count > 0 ? $", {a.Unknown.Count} unknown argument(s)" : "")}");
 
-        if (a.Demo) DemoData.Fill();
-        else if (Install.IsInstalled) InstalledStart(); // Debug builds and exes in Downloads write nothing by themselves
+        if (!a.Demo && Install.IsInstalled) InstalledStart(); // Debug builds and exes in Downloads write nothing by themselves
 
-        // App features: services, hotkeys, tray items, settings section (template sample below)
-        SettingsPage.AppSection = SampleSettings.Create;
-        SampleSettings.Apply();
+        // PingWhen (spec §5.8): AUMID → watchers.json with pid checks → Engine → PipeServer → hotkey → tray
+        Store.ReadOnly = a.Demo;
+        if (!a.Demo) Toast.Register();
+        Engine.Current.Fired += Notifier.OnFired;
+        Notifier.Start(phone: !a.Demo);
+        Cards.Start();
+        if (a.Demo && !a.Autoplay) DemoData.Fill();
+        if (!a.Demo) Engine.Current.Restore(Store.LoadWatchers());
+        Engine.Current.Start();
+        if (!a.Demo) _ = PipeServer.Run(PipeServer.Name, pipeStop.Token);
+        SystemEvents.PowerModeChanged += (_, pe) => { if (pe.Mode == PowerModes.Resume) Engine.Current.ResetTimers(); };
+        SettingsPage.AppSection = () => new PingSettingsView();
+        Hotkeys.RegisterInDemo = a.Autoplay; // the scene GIF presses Ctrl+Alt+W; only with the working instance closed
+        PingSettingsView.ApplyHotkey();
+        ConfirmExit = () => Engine.Current.Snapshot.Count == 0 || a.Demo ||
+            MessageBox.Show(string.Format(Loc.T("Exit.Confirm"), Engine.Current.Snapshot.Count), AppInfo.DisplayName,
+                MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK;
+        Exiting += () =>
+        {
+            pipeStop.Cancel();          // agents get EOF
+            Notifier.Flush();           // ≤ 3 s
+            Engine.Current.Flush().Wait(TimeSpan.FromSeconds(2));
+            KeepAwake.Set(false);
+        };
+        RemoveData = () => { Toast.Unregister(); return null; };
 
         window = new MainWindow();
         if (a.Width > 0) (window.Width, window.Height) = (a.Width, a.Height);
@@ -56,7 +79,14 @@ public partial class App : Application
         };
         Capture.Attach(window, () => { if (a.Autoplay) Autoplay.Start(window); });
 
-        if (a.Screenshot is null) Tray.Create(ShowMain, () => Quit());
+        if (a.Screenshot is null)
+        {
+            Tray.Create(ShowMain, () => Quit(), TrayMenu.Items());
+            Cards.Changed += TrayMenu.Update;
+            Cards.Items.CollectionChanged += (_, _) => TrayMenu.Update();
+            Notifier.StateChanged += () => Dispatcher.BeginInvoke(TrayMenu.Update);
+            TrayMenu.Update();
+        }
         SessionEnding += (_, _) => RaiseExiting();
         Updates.Found += (version, url) =>
         {
@@ -68,7 +98,7 @@ public partial class App : Application
         };
         Updates.Start();
 
-        if (!a.Background) ShowMain(a.Page);
+        if (!a.Background && !Cli.StartedByCli()) ShowMain(a.Page); // started by --mcp/--hook/--notify: stay in the tray
     }
 
     public static void ShowMain(string? page)

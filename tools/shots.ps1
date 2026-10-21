@@ -6,7 +6,7 @@ $ErrorActionPreference = 'Stop'; $PSNativeCommandUseErrorActionPreference = $tru
 $Pages = $Pages -split ','   # pwsh -File passes "main,settings" as one string
 $App =(Get-ChildItem src -Directory | Select-Object -First 1).Name
 dotnet build "src/$App" -c Release | Out-Null
-$exe = "src/$App/bin/Release/net10.0-windows/$App.exe"
+$exe = "src/$App/bin/Release/net10.0-windows10.0.26100.0/$App.exe"
 New-Item -ItemType Directory docs -Force | Out-Null
 
 # Desktop lock (00-shared §9.6): the window is topmost and would get into another session's GIF

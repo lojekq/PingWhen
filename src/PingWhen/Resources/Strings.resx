@@ -7,7 +7,6 @@
   <data name="Tray.Open" xml:space="preserve"><value>Open</value></data>
   <data name="Tray.Exit" xml:space="preserve"><value>Exit</value></data>
   <data name="Tray.Hidden" xml:space="preserve"><value>Still running in the notification area. To quit, right-click the icon and choose Exit.</value></data>
-  <data name="Page.Main" xml:space="preserve"><value>Home</value></data>
   <data name="Page.Settings" xml:space="preserve"><value>Settings</value></data>
   <data name="Page.About" xml:space="preserve"><value>About</value></data>
   <data name="Settings.Language" xml:space="preserve"><value>Language</value></data>
@@ -43,13 +42,192 @@ Open the folder?</value></data>
   <data name="Hotkey.Placeholder" xml:space="preserve"><value>Press a key combination</value></data>
   <data name="Hotkey.Busy" xml:space="preserve"><value>Taken by another program</value></data>
   <data name="Hotkey.Failed" xml:space="preserve"><value>Could not register</value></data>
-  <data name="Sample.Hotkey" xml:space="preserve"><value>Hotkey to show the window</value></data>
-  <data name="Main.Title" xml:space="preserve"><value>Tasks</value></data>
-  <data name="Main.Subtitle" xml:space="preserve"><value>Sample page of the template. Replace it with the app's own pages.</value></data>
-  <data name="Main.Empty" xml:space="preserve"><value>Nothing here yet.</value></data>
-  <data name="Demo.Build" xml:space="preserve"><value>Project build</value></data>
-  <data name="Demo.Dataset" xml:space="preserve"><value>Dataset download</value></data>
-  <data name="Demo.Report" xml:space="preserve"><value>Report for Alex</value></data>
-  <data name="Demo.Daily" xml:space="preserve"><value>every day at 6 PM</value></data>
-  <data name="Demo.Backup" xml:space="preserve"><value>Nightly backup</value></data>
+  <data name="Page.Watchers" xml:space="preserve"><value>Watchers</value></data>
+  <data name="Page.New" xml:space="preserve"><value>New watcher</value></data>
+  <data name="Page.Edit" xml:space="preserve"><value>Edit watcher</value></data>
+  <data name="Page.History" xml:space="preserve"><value>History</value></data>
+  <data name="Page.Agents" xml:space="preserve"><value>Agents</value></data>
+  <data name="Watchers.New" xml:space="preserve"><value>New</value></data>
+  <data name="Watchers.Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Watchers.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Watchers.Awake" xml:space="preserve"><value>PC stays awake</value></data>
+  <data name="Watchers.Empty" xml:space="preserve"><value>Nothing is being watched.</value></data>
+  <data name="Watchers.EmptyHint" xml:space="preserve"><value>Press Ctrl+Alt+W in any window, or use "Tell me when…" in the tray menu.</value></data>
+  <data name="Watchers.DeliveryError" xml:space="preserve"><value>The phone message was not delivered</value></data>
+  <data name="Route.Auto" xml:space="preserve"><value>Auto</value></data>
+  <data name="Route.Pc" xml:space="preserve"><value>PC only</value></data>
+  <data name="Route.Phone" xml:space="preserve"><value>Phone only</value></data>
+  <data name="Route.Both" xml:space="preserve"><value>PC and phone</value></data>
+  <data name="Cond.Exited" xml:space="preserve"><value>Process exits</value></data>
+  <data name="Cond.ExitedChildren" xml:space="preserve"><value>Process and its children exit</value></data>
+  <data name="Cond.Closed" xml:space="preserve"><value>Window closes</value></data>
+  <data name="Cond.TitleChanged" xml:space="preserve"><value>Window title changes</value></data>
+  <data name="Cond.TitleContains" xml:space="preserve"><value>Title contains "{0}"</value></data>
+  <data name="Cond.TitleRegex" xml:space="preserve"><value>Title matches /{0}/</value></data>
+  <data name="Cond.StoppedGrowing" xml:space="preserve"><value>Stops growing: {0}, {1} s</value></data>
+  <data name="Cond.Appeared" xml:space="preserve"><value>Appears: {0}</value></data>
+  <data name="Cond.Disappeared" xml:space="preserve"><value>Disappears: {0}</value></data>
+  <data name="Cond.Quiet" xml:space="preserve"><value>{0} below {1} for {2} s</value></data>
+  <data name="New.Cond.Closed" xml:space="preserve"><value>Window closes</value></data>
+  <data name="New.Cond.TitleChanged" xml:space="preserve"><value>Title changes</value></data>
+  <data name="New.Cond.TitleMatches" xml:space="preserve"><value>Title contains…</value></data>
+  <data name="New.Cond.Exited" xml:space="preserve"><value>Process exits</value></data>
+  <data name="New.Cond.Quiet" xml:space="preserve"><value>Goes quiet (CPU, GPU, disk, network)</value></data>
+  <data name="New.Cond.StoppedGrowing" xml:space="preserve"><value>File stops growing</value></data>
+  <data name="New.Cond.Appeared" xml:space="preserve"><value>File appears</value></data>
+  <data name="New.Cond.Disappeared" xml:space="preserve"><value>File disappears</value></data>
+  <data name="Metric.Cpu" xml:space="preserve"><value>CPU</value></data>
+  <data name="Metric.Gpu" xml:space="preserve"><value>GPU</value></data>
+  <data name="Metric.Disk" xml:space="preserve"><value>Disk</value></data>
+  <data name="Metric.Net" xml:space="preserve"><value>Network</value></data>
+  <data name="Target.System" xml:space="preserve"><value>System</value></data>
+  <data name="Fire.Done" xml:space="preserve"><value>Done: {0} · {1}</value></data>
+  <data name="Fire.Error" xml:space="preserve"><value>Error: {0} · code {1}</value></data>
+  <data name="Fire.Exited" xml:space="preserve"><value>Process exited</value></data>
+  <data name="Fire.Exited.Code" xml:space="preserve"><value>Process exited, code {0}</value></data>
+  <data name="Fire.WindowClosed" xml:space="preserve"><value>Window closed</value></data>
+  <data name="Fire.TitleChanged" xml:space="preserve"><value>Title changed: {0}</value></data>
+  <data name="Fire.TitleMatched" xml:space="preserve"><value>Title matched: {0}</value></data>
+  <data name="Fire.FileAppeared" xml:space="preserve"><value>File appeared</value></data>
+  <data name="Fire.FileGone" xml:space="preserve"><value>File is gone</value></data>
+  <data name="Fire.Stopped" xml:space="preserve"><value>File stopped growing ({0})</value></data>
+  <data name="Fire.Quiet" xml:space="preserve"><value>Quiet: {0} · {1}</value></data>
+  <data name="Fire.Quiet.Body" xml:space="preserve"><value>{0} below {1} for {2} s</value></data>
+  <data name="Fire.Cancelled" xml:space="preserve"><value>Cancelled: {0}</value></data>
+  <data name="Fire.Expired" xml:space="preserve"><value>Expired: {0}</value></data>
+  <data name="Fire.Lost" xml:space="preserve"><value>Lost: {0}</value></data>
+  <data name="Fire.Lost.Body" xml:space="preserve"><value>Not found after a restart</value></data>
+  <data name="Live.Children" xml:space="preserve"><value>waiting for child processes: {0}</value></data>
+  <data name="Live.Exists" xml:space="preserve"><value>exists</value></data>
+  <data name="Live.Missing" xml:space="preserve"><value>not there yet</value></data>
+  <data name="Live.Quiet" xml:space="preserve"><value>quiet {0}/{1} s</value></data>
+  <data name="Live.Stable" xml:space="preserve"><value>not growing {0}/{1} s</value></data>
+  <data name="Live.WaitingAbove" xml:space="preserve"><value>waiting for activity above {0}</value></data>
+  <data name="Live.WaitingGrowth" xml:space="preserve"><value>waiting for growth</value></data>
+  <data name="Dur.S" xml:space="preserve"><value>{0} s</value></data>
+  <data name="Dur.M" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Dur.HM" xml:space="preserve"><value>{0} h {1:00} min</value></data>
+  <data name="Unit.KB" xml:space="preserve"><value>{0} KB</value></data>
+  <data name="Unit.MB" xml:space="preserve"><value>{0} MB</value></data>
+  <data name="Unit.GB" xml:space="preserve"><value>{0} GB</value></data>
+  <data name="Unit.S" xml:space="preserve"><value>s</value></data>
+  <data name="Unit.MBs" xml:space="preserve"><value>{0} MB/s</value></data>
+  <data name="Unit.KBs" xml:space="preserve"><value>{0} KB/s</value></data>
+  <data name="Unit.MBsShort" xml:space="preserve"><value>MB/s</value></data>
+  <data name="Unit.KBsShort" xml:space="preserve"><value>KB/s</value></data>
+  <data name="Outcome.Done" xml:space="preserve"><value>done</value></data>
+  <data name="Outcome.Error" xml:space="preserve"><value>error</value></data>
+  <data name="Outcome.Quiet" xml:space="preserve"><value>quiet</value></data>
+  <data name="Outcome.Lost" xml:space="preserve"><value>lost</value></data>
+  <data name="Outcome.Cancelled" xml:space="preserve"><value>cancelled</value></data>
+  <data name="Outcome.Notify" xml:space="preserve"><value>message</value></data>
+  <data name="Channel.pc" xml:space="preserve"><value>PC</value></data>
+  <data name="Channel.phone" xml:space="preserve"><value>phone</value></data>
+  <data name="Channel.phone.queued" xml:space="preserve"><value>phone…</value></data>
+  <data name="Channel.phone.failed" xml:space="preserve"><value>phone: not delivered</value></data>
+  <data name="History.All" xml:space="preserve"><value>All</value></data>
+  <data name="History.Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="History.Clear.Confirm" xml:space="preserve"><value>Clear the whole history?</value></data>
+  <data name="History.Empty" xml:space="preserve"><value>No events yet.</value></data>
+  <data name="New.Target" xml:space="preserve"><value>Target</value></data>
+  <data name="New.Kind.Window" xml:space="preserve"><value>Window</value></data>
+  <data name="New.Kind.Process" xml:space="preserve"><value>Process</value></data>
+  <data name="New.Kind.File" xml:space="preserve"><value>File</value></data>
+  <data name="New.Kind.System" xml:space="preserve"><value>System</value></data>
+  <data name="New.Commands" xml:space="preserve"><value>Commands running in this terminal</value></data>
+  <data name="New.WindowItself" xml:space="preserve"><value>The window itself</value></data>
+  <data name="New.ProcFilter" xml:space="preserve"><value>Filter by name or command line</value></data>
+  <data name="New.ProcThis" xml:space="preserve"><value>Only this process</value></data>
+  <data name="New.ProcAll" xml:space="preserve"><value>All processes with this name</value></data>
+  <data name="New.Browse" xml:space="preserve"><value>Browse…</value></data>
+  <data name="New.FileHint" xml:space="preserve"><value>Preallocated files (torrents, some downloaders) don't grow: use "File disappears" on the .part file, or disk or network quiet.</value></data>
+  <data name="New.SystemHint" xml:space="preserve"><value>The whole system: CPU, GPU, disk or network stays below a threshold.</value></data>
+  <data name="New.Condition" xml:space="preserve"><value>Condition</value></data>
+  <data name="New.Regex" xml:space="preserve"><value>Regex</value></data>
+  <data name="New.Below" xml:space="preserve"><value>below</value></data>
+  <data name="New.For" xml:space="preserve"><value>for</value></data>
+  <data name="New.Seconds" xml:space="preserve"><value>seconds</value></data>
+  <data name="New.AlreadyRunning" xml:space="preserve"><value>Already running (don't wait for activity first)</value></data>
+  <data name="New.Notification" xml:space="preserve"><value>Notification</value></data>
+  <data name="New.TitlePlaceholder" xml:space="preserve"><value>Title</value></data>
+  <data name="New.Route" xml:space="preserve"><value>Where</value></data>
+  <data name="New.KeepAwake" xml:space="preserve"><value>Don't let the PC sleep while waiting</value></data>
+  <data name="New.WaitChildren" xml:space="preserve"><value>Wait for child processes too (installers)</value></data>
+  <data name="New.Watch" xml:space="preserve"><value>Watch</value></data>
+  <data name="New.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="New.Error.Window" xml:space="preserve"><value>Pick a window.</value></data>
+  <data name="New.Error.Process" xml:space="preserve"><value>Pick a process.</value></data>
+  <data name="New.Error.Gone" xml:space="preserve"><value>The process is gone.</value></data>
+  <data name="New.Error.Path" xml:space="preserve"><value>Enter the full path of the file.</value></data>
+  <data name="New.Error.NoFile" xml:space="preserve"><value>The file doesn't exist.</value></data>
+  <data name="New.Error.Pattern" xml:space="preserve"><value>Enter the text to look for.</value></data>
+  <data name="Agents.Subtitle" xml:space="preserve"><value>Claude Code and other MCP clients use the same watchers through PingWhen.exe --mcp; hooks bring "Claude finished" and "needs your answer" to your phone.</value></data>
+  <data name="Agents.Move.Title" xml:space="preserve"><value>Move PingWhen.exe to a permanent folder</value></data>
+  <data name="Agents.Move.Message" xml:space="preserve"><value>Put it in %LOCALAPPDATA%\Programs\PingWhen\ first, otherwise the command below breaks when the exe moves.</value></data>
+  <data name="Agents.Sessions" xml:space="preserve"><value>Connected sessions</value></data>
+  <data name="Agents.PipeOn" xml:space="preserve"><value>Agent channel is up · connected: {0}</value></data>
+  <data name="Agents.PipeOff" xml:space="preserve"><value>Agent channel is not running</value></data>
+  <data name="Agents.SessionDetails" xml:space="preserve"><value>watchers: {0} · {1}</value></data>
+  <data name="Agents.Mcp" xml:space="preserve"><value>MCP server</value></data>
+  <data name="Agents.Mcp.Note" xml:space="preserve"><value>Run in a terminal; "claude mcp list" checks that the config was written.</value></data>
+  <data name="Agents.Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="Agents.Hooks" xml:space="preserve"><value>Claude Code hooks</value></data>
+  <data name="Agents.Hooks.Note" xml:space="preserve"><value>Add to ~/.claude/settings.json. No ping while the session's window is in front of you.</value></data>
+  <data name="Agents.ClaudeText" xml:space="preserve"><value>Add Claude's reply to the phone message</value></data>
+  <data name="Agents.ClaudeText.Note" xml:space="preserve"><value>The first 150 characters go through Telegram's servers; bot messages are not end-to-end encrypted.</value></data>
+  <data name="Agents.Recent" xml:space="preserve"><value>Recent agent notifications</value></data>
+  <data name="Agents.Recent.Empty" xml:space="preserve"><value>None yet.</value></data>
+  <data name="Hook.Done" xml:space="preserve"><value>{0}: Claude finished</value></data>
+  <data name="Hook.Needs" xml:space="preserve"><value>{0}: needs your answer</value></data>
+  <data name="Settings.Channels" xml:space="preserve"><value>Channels</value></data>
+  <data name="Settings.Route" xml:space="preserve"><value>Routing</value></data>
+  <data name="Settings.Away" xml:space="preserve"><value>I'm away after (minutes)</value></data>
+  <data name="Settings.Away.Note" xml:space="preserve"><value>Auto route: the phone gets a message when there was no keyboard or mouse input this long.</value></data>
+  <data name="Settings.Busy" xml:space="preserve"><value>Phone during fullscreen games and presentations</value></data>
+  <data name="Settings.Busy.Note" xml:space="preserve"><value>Windows mutes toasts then anyway.</value></data>
+  <data name="Settings.Hotkey" xml:space="preserve"><value>New watcher for the active window</value></data>
+  <data name="Tg.Demo" xml:space="preserve"><value>demo</value></data>
+  <data name="Tg.NotSet" xml:space="preserve"><value>not set up</value></data>
+  <data name="Tg.Step1" xml:space="preserve"><value>1. In Telegram open @BotFather, send /newbot, choose a name (for example, PingWhen) and a username, copy the token.</value></data>
+  <data name="Tg.Step2" xml:space="preserve"><value>2. Paste the token here. It is stored encrypted with Windows DPAPI.</value></data>
+  <data name="Tg.Check" xml:space="preserve"><value>Check</value></data>
+  <data name="Tg.Step3" xml:space="preserve"><value>3. Link the bot to your chat with a one-time code.</value></data>
+  <data name="Tg.Pair" xml:space="preserve"><value>Pair</value></data>
+  <data name="Tg.OtherBot" xml:space="preserve"><value>Other bot</value></data>
+  <data name="Tg.Open" xml:space="preserve"><value>Open in Telegram</value></data>
+  <data name="Tg.CancelPair" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Tg.OrSend" xml:space="preserve"><value>or send this code to the bot:</value></data>
+  <data name="Tg.Waiting" xml:space="preserve"><value>waiting… {0}</value></data>
+  <data name="Tg.CodeExpired" xml:space="preserve"><value>The code expired. Press Pair again.</value></data>
+  <data name="Tg.PairedTo" xml:space="preserve"><value>Paired to {0} · @{1}</value></data>
+  <data name="Tg.Test" xml:space="preserve"><value>Test</value></data>
+  <data name="Tg.TestSent" xml:space="preserve"><value>Sent</value></data>
+  <data name="Tg.Unpair" xml:space="preserve"><value>Unpair</value></data>
+  <data name="Tg.Repair" xml:space="preserve"><value>Pair again</value></data>
+  <data name="Tg.DemoPush" xml:space="preserve"><value>Send demo push</value></data>
+  <data name="Tg.DemoPush.NoBot" xml:space="preserve"><value>There is no paired bot in the real settings.</value></data>
+  <data name="Tg.Privacy" xml:space="preserve"><value>Messages go through Telegram's servers: window titles, process and file names.</value></data>
+  <data name="Tg.Paired.Message" xml:space="preserve"><value>PingWhen is paired. Notifications will arrive here.</value></data>
+  <data name="Tg.Error.Network" xml:space="preserve"><value>Telegram is not reachable. PingWhen retries; check the network or VPN.</value></data>
+  <data name="Tg.Error.Token" xml:space="preserve"><value>The token is wrong. Copy it again from @BotFather.</value></data>
+  <data name="Tg.Error.Blocked" xml:space="preserve"><value>The bot is blocked or the chat was deleted. Press "Pair again".</value></data>
+  <data name="Tg.Error.Webhook" xml:space="preserve"><value>This bot has a webhook set: create a separate bot for PingWhen.</value></data>
+  <data name="Tg.Error.OtherPoller" xml:space="preserve"><value>Another program or another PC already polls this bot. Use a separate bot for each PC.</value></data>
+  <data name="Tg.Error.TooMany" xml:space="preserve"><value>Too many messages: Telegram asks to wait {0} s.</value></data>
+  <data name="Test.Title" xml:space="preserve"><value>PingWhen: test</value></data>
+  <data name="Test.Body" xml:space="preserve"><value>If you see this, notifications work.</value></data>
+  <data name="Toast.OpenWindow" xml:space="preserve"><value>Open window</value></data>
+  <data name="Tray.When" xml:space="preserve"><value>Tell me when…</value></data>
+  <data name="Tray.When.Process" xml:space="preserve"><value>Pick a process…</value></data>
+  <data name="Tray.When.File" xml:space="preserve"><value>File…</value></data>
+  <data name="Tray.When.Quiet" xml:space="preserve"><value>System goes quiet…</value></data>
+  <data name="Tray.Active" xml:space="preserve"><value>Active ({0})</value></data>
+  <data name="Tray.Dnd" xml:space="preserve"><value>Do not disturb for 1 h</value></data>
+  <data name="Tray.DndOff" xml:space="preserve"><value>Phone notifications back on</value></data>
+  <data name="Tray.Test" xml:space="preserve"><value>Test notification</value></data>
+  <data name="Tray.Tooltip" xml:space="preserve"><value>{0} watching · next: {1} {2}</value></data>
+  <data name="Exit.Confirm" xml:space="preserve"><value>{0} watcher(s) will continue at the next start. Exit?</value></data>
+  <data name="Demo.Lang" xml:space="preserve"><value>en</value></data>
+  <data name="Demo.Push" xml:space="preserve"><value>Done: ffmpeg · 37 min
+Process exited, code 0</value></data>
 </root>

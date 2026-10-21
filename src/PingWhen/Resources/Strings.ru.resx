@@ -7,7 +7,6 @@
   <data name="Tray.Open" xml:space="preserve"><value>Открыть</value></data>
   <data name="Tray.Exit" xml:space="preserve"><value>Выход</value></data>
   <data name="Tray.Hidden" xml:space="preserve"><value>Программа продолжает работать в области уведомлений. Чтобы выйти, щёлкните значок правой кнопкой и выберите «Выход».</value></data>
-  <data name="Page.Main" xml:space="preserve"><value>Главная</value></data>
   <data name="Page.Settings" xml:space="preserve"><value>Настройки</value></data>
   <data name="Page.About" xml:space="preserve"><value>О программе</value></data>
   <data name="Settings.Language" xml:space="preserve"><value>Язык</value></data>
@@ -43,13 +42,192 @@
   <data name="Hotkey.Placeholder" xml:space="preserve"><value>Нажмите сочетание клавиш</value></data>
   <data name="Hotkey.Busy" xml:space="preserve"><value>Занято другой программой</value></data>
   <data name="Hotkey.Failed" xml:space="preserve"><value>Не удалось зарегистрировать</value></data>
-  <data name="Sample.Hotkey" xml:space="preserve"><value>Сочетание клавиш для окна</value></data>
-  <data name="Main.Title" xml:space="preserve"><value>Задачи</value></data>
-  <data name="Main.Subtitle" xml:space="preserve"><value>Пример страницы шаблона. Замените её страницами программы.</value></data>
-  <data name="Main.Empty" xml:space="preserve"><value>Пока пусто.</value></data>
-  <data name="Demo.Build" xml:space="preserve"><value>Сборка проекта</value></data>
-  <data name="Demo.Dataset" xml:space="preserve"><value>Загрузка датасета</value></data>
-  <data name="Demo.Report" xml:space="preserve"><value>Отчёт для Alex</value></data>
-  <data name="Demo.Daily" xml:space="preserve"><value>каждый день в 18:00</value></data>
-  <data name="Demo.Backup" xml:space="preserve"><value>Ночная копия</value></data>
+  <data name="Page.Watchers" xml:space="preserve"><value>Наблюдатели</value></data>
+  <data name="Page.New" xml:space="preserve"><value>Новый наблюдатель</value></data>
+  <data name="Page.Edit" xml:space="preserve"><value>Изменить наблюдатель</value></data>
+  <data name="Page.History" xml:space="preserve"><value>История</value></data>
+  <data name="Page.Agents" xml:space="preserve"><value>Агенты</value></data>
+  <data name="Watchers.New" xml:space="preserve"><value>Новый</value></data>
+  <data name="Watchers.Edit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="Watchers.Cancel" xml:space="preserve"><value>Отменить</value></data>
+  <data name="Watchers.Awake" xml:space="preserve"><value>ПК не уснёт</value></data>
+  <data name="Watchers.Empty" xml:space="preserve"><value>Пока ни за чем не следим.</value></data>
+  <data name="Watchers.EmptyHint" xml:space="preserve"><value>Нажми Ctrl+Alt+W в любом окне или выбери «Скажи, когда…» в меню трея.</value></data>
+  <data name="Watchers.DeliveryError" xml:space="preserve"><value>Сообщение на телефон не доставлено</value></data>
+  <data name="Route.Auto" xml:space="preserve"><value>Авто</value></data>
+  <data name="Route.Pc" xml:space="preserve"><value>Только ПК</value></data>
+  <data name="Route.Phone" xml:space="preserve"><value>Только телефон</value></data>
+  <data name="Route.Both" xml:space="preserve"><value>ПК и телефон</value></data>
+  <data name="Cond.Exited" xml:space="preserve"><value>Процесс завершится</value></data>
+  <data name="Cond.ExitedChildren" xml:space="preserve"><value>Процесс и дочерние завершатся</value></data>
+  <data name="Cond.Closed" xml:space="preserve"><value>Окно закроется</value></data>
+  <data name="Cond.TitleChanged" xml:space="preserve"><value>Заголовок окна изменится</value></data>
+  <data name="Cond.TitleContains" xml:space="preserve"><value>Заголовок содержит «{0}»</value></data>
+  <data name="Cond.TitleRegex" xml:space="preserve"><value>Заголовок совпадёт с /{0}/</value></data>
+  <data name="Cond.StoppedGrowing" xml:space="preserve"><value>Перестанет расти: {0}, {1} с</value></data>
+  <data name="Cond.Appeared" xml:space="preserve"><value>Появится: {0}</value></data>
+  <data name="Cond.Disappeared" xml:space="preserve"><value>Исчезнет: {0}</value></data>
+  <data name="Cond.Quiet" xml:space="preserve"><value>{0} ниже {1} {2} с</value></data>
+  <data name="New.Cond.Closed" xml:space="preserve"><value>Окно закроется</value></data>
+  <data name="New.Cond.TitleChanged" xml:space="preserve"><value>Заголовок изменится</value></data>
+  <data name="New.Cond.TitleMatches" xml:space="preserve"><value>Заголовок содержит…</value></data>
+  <data name="New.Cond.Exited" xml:space="preserve"><value>Процесс завершится</value></data>
+  <data name="New.Cond.Quiet" xml:space="preserve"><value>Затихнет (CPU, GPU, диск, сеть)</value></data>
+  <data name="New.Cond.StoppedGrowing" xml:space="preserve"><value>Файл перестанет расти</value></data>
+  <data name="New.Cond.Appeared" xml:space="preserve"><value>Файл появится</value></data>
+  <data name="New.Cond.Disappeared" xml:space="preserve"><value>Файл исчезнет</value></data>
+  <data name="Metric.Cpu" xml:space="preserve"><value>CPU</value></data>
+  <data name="Metric.Gpu" xml:space="preserve"><value>GPU</value></data>
+  <data name="Metric.Disk" xml:space="preserve"><value>Диск</value></data>
+  <data name="Metric.Net" xml:space="preserve"><value>Сеть</value></data>
+  <data name="Target.System" xml:space="preserve"><value>Система</value></data>
+  <data name="Fire.Done" xml:space="preserve"><value>Готово: {0} · {1}</value></data>
+  <data name="Fire.Error" xml:space="preserve"><value>Ошибка: {0} · код {1}</value></data>
+  <data name="Fire.Exited" xml:space="preserve"><value>Процесс завершился</value></data>
+  <data name="Fire.Exited.Code" xml:space="preserve"><value>Процесс завершился, код {0}</value></data>
+  <data name="Fire.WindowClosed" xml:space="preserve"><value>Окно закрылось</value></data>
+  <data name="Fire.TitleChanged" xml:space="preserve"><value>Заголовок изменился: {0}</value></data>
+  <data name="Fire.TitleMatched" xml:space="preserve"><value>Заголовок совпал: {0}</value></data>
+  <data name="Fire.FileAppeared" xml:space="preserve"><value>Файл появился</value></data>
+  <data name="Fire.FileGone" xml:space="preserve"><value>Файл исчез</value></data>
+  <data name="Fire.Stopped" xml:space="preserve"><value>Файл перестал расти ({0})</value></data>
+  <data name="Fire.Quiet" xml:space="preserve"><value>Затихло: {0} · {1}</value></data>
+  <data name="Fire.Quiet.Body" xml:space="preserve"><value>{0} ниже {1} {2} с</value></data>
+  <data name="Fire.Cancelled" xml:space="preserve"><value>Отменён: {0}</value></data>
+  <data name="Fire.Expired" xml:space="preserve"><value>Истёк: {0}</value></data>
+  <data name="Fire.Lost" xml:space="preserve"><value>Потерян: {0}</value></data>
+  <data name="Fire.Lost.Body" xml:space="preserve"><value>Не найден после перезапуска</value></data>
+  <data name="Live.Children" xml:space="preserve"><value>ждём дочерние процессы: {0}</value></data>
+  <data name="Live.Exists" xml:space="preserve"><value>есть</value></data>
+  <data name="Live.Missing" xml:space="preserve"><value>пока нет</value></data>
+  <data name="Live.Quiet" xml:space="preserve"><value>затишье {0}/{1} с</value></data>
+  <data name="Live.Stable" xml:space="preserve"><value>не растёт {0}/{1} с</value></data>
+  <data name="Live.WaitingAbove" xml:space="preserve"><value>ждём нагрузку выше {0}</value></data>
+  <data name="Live.WaitingGrowth" xml:space="preserve"><value>ждём роста</value></data>
+  <data name="Dur.S" xml:space="preserve"><value>{0} с</value></data>
+  <data name="Dur.M" xml:space="preserve"><value>{0} мин</value></data>
+  <data name="Dur.HM" xml:space="preserve"><value>{0} ч {1:00} мин</value></data>
+  <data name="Unit.KB" xml:space="preserve"><value>{0} КБ</value></data>
+  <data name="Unit.MB" xml:space="preserve"><value>{0} МБ</value></data>
+  <data name="Unit.GB" xml:space="preserve"><value>{0} ГБ</value></data>
+  <data name="Unit.S" xml:space="preserve"><value>с</value></data>
+  <data name="Unit.MBs" xml:space="preserve"><value>{0} МБ/с</value></data>
+  <data name="Unit.KBs" xml:space="preserve"><value>{0} КБ/с</value></data>
+  <data name="Unit.MBsShort" xml:space="preserve"><value>МБ/с</value></data>
+  <data name="Unit.KBsShort" xml:space="preserve"><value>КБ/с</value></data>
+  <data name="Outcome.Done" xml:space="preserve"><value>готово</value></data>
+  <data name="Outcome.Error" xml:space="preserve"><value>ошибка</value></data>
+  <data name="Outcome.Quiet" xml:space="preserve"><value>затихло</value></data>
+  <data name="Outcome.Lost" xml:space="preserve"><value>потерян</value></data>
+  <data name="Outcome.Cancelled" xml:space="preserve"><value>отменён</value></data>
+  <data name="Outcome.Notify" xml:space="preserve"><value>сообщение</value></data>
+  <data name="Channel.pc" xml:space="preserve"><value>ПК</value></data>
+  <data name="Channel.phone" xml:space="preserve"><value>телефон</value></data>
+  <data name="Channel.phone.queued" xml:space="preserve"><value>телефон…</value></data>
+  <data name="Channel.phone.failed" xml:space="preserve"><value>телефон: не доставлено</value></data>
+  <data name="History.All" xml:space="preserve"><value>Все</value></data>
+  <data name="History.Clear" xml:space="preserve"><value>Очистить</value></data>
+  <data name="History.Clear.Confirm" xml:space="preserve"><value>Очистить всю историю?</value></data>
+  <data name="History.Empty" xml:space="preserve"><value>Событий пока нет.</value></data>
+  <data name="New.Target" xml:space="preserve"><value>Цель</value></data>
+  <data name="New.Kind.Window" xml:space="preserve"><value>Окно</value></data>
+  <data name="New.Kind.Process" xml:space="preserve"><value>Процесс</value></data>
+  <data name="New.Kind.File" xml:space="preserve"><value>Файл</value></data>
+  <data name="New.Kind.System" xml:space="preserve"><value>Система</value></data>
+  <data name="New.Commands" xml:space="preserve"><value>Команды в этом терминале</value></data>
+  <data name="New.WindowItself" xml:space="preserve"><value>Само окно</value></data>
+  <data name="New.ProcFilter" xml:space="preserve"><value>Фильтр по имени или командной строке</value></data>
+  <data name="New.ProcThis" xml:space="preserve"><value>Только этот процесс</value></data>
+  <data name="New.ProcAll" xml:space="preserve"><value>Все процессы с этим именем</value></data>
+  <data name="New.Browse" xml:space="preserve"><value>Обзор…</value></data>
+  <data name="New.FileHint" xml:space="preserve"><value>Предвыделенные файлы (торренты, некоторые загрузчики) не растут: используй «Файл исчезнет» для .part или затишье диска или сети.</value></data>
+  <data name="New.SystemHint" xml:space="preserve"><value>Вся система: CPU, GPU, диск или сеть ниже порога.</value></data>
+  <data name="New.Condition" xml:space="preserve"><value>Условие</value></data>
+  <data name="New.Regex" xml:space="preserve"><value>Regex</value></data>
+  <data name="New.Below" xml:space="preserve"><value>ниже</value></data>
+  <data name="New.For" xml:space="preserve"><value>в течение</value></data>
+  <data name="New.Seconds" xml:space="preserve"><value>секунд</value></data>
+  <data name="New.AlreadyRunning" xml:space="preserve"><value>Уже идёт (не ждать сначала нагрузки)</value></data>
+  <data name="New.Notification" xml:space="preserve"><value>Уведомление</value></data>
+  <data name="New.TitlePlaceholder" xml:space="preserve"><value>Заголовок</value></data>
+  <data name="New.Route" xml:space="preserve"><value>Куда</value></data>
+  <data name="New.KeepAwake" xml:space="preserve"><value>Не давать ПК уснуть, пока ждём</value></data>
+  <data name="New.WaitChildren" xml:space="preserve"><value>Ждать и дочерние процессы (установщики)</value></data>
+  <data name="New.Watch" xml:space="preserve"><value>Следить</value></data>
+  <data name="New.Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="New.Error.Window" xml:space="preserve"><value>Выбери окно.</value></data>
+  <data name="New.Error.Process" xml:space="preserve"><value>Выбери процесс.</value></data>
+  <data name="New.Error.Gone" xml:space="preserve"><value>Процесс уже завершился.</value></data>
+  <data name="New.Error.Path" xml:space="preserve"><value>Укажи полный путь к файлу.</value></data>
+  <data name="New.Error.NoFile" xml:space="preserve"><value>Такого файла нет.</value></data>
+  <data name="New.Error.Pattern" xml:space="preserve"><value>Укажи текст для поиска.</value></data>
+  <data name="Agents.Subtitle" xml:space="preserve"><value>Claude Code и другие MCP-клиенты пользуются теми же наблюдателями через PingWhen.exe --mcp; хуки присылают «Claude закончил» и «нужен ответ» на телефон.</value></data>
+  <data name="Agents.Move.Title" xml:space="preserve"><value>Перенеси PingWhen.exe в постоянную папку</value></data>
+  <data name="Agents.Move.Message" xml:space="preserve"><value>Сначала положи его в %LOCALAPPDATA%\Programs\PingWhen\, иначе команда ниже сломается, когда exe переедет.</value></data>
+  <data name="Agents.Sessions" xml:space="preserve"><value>Подключённые сессии</value></data>
+  <data name="Agents.PipeOn" xml:space="preserve"><value>Канал для агентов работает · подключено: {0}</value></data>
+  <data name="Agents.PipeOff" xml:space="preserve"><value>Канал для агентов не запущен</value></data>
+  <data name="Agents.SessionDetails" xml:space="preserve"><value>наблюдателей: {0} · {1}</value></data>
+  <data name="Agents.Mcp" xml:space="preserve"><value>MCP-сервер</value></data>
+  <data name="Agents.Mcp.Note" xml:space="preserve"><value>Выполни в терминале; «claude mcp list» проверит, что конфиг записался.</value></data>
+  <data name="Agents.Copy" xml:space="preserve"><value>Скопировать</value></data>
+  <data name="Agents.Hooks" xml:space="preserve"><value>Хуки Claude Code</value></data>
+  <data name="Agents.Hooks.Note" xml:space="preserve"><value>Добавь в ~/.claude/settings.json. Пинга нет, пока окно сессии перед глазами.</value></data>
+  <data name="Agents.ClaudeText" xml:space="preserve"><value>Текст ответа Claude в сообщении на телефон</value></data>
+  <data name="Agents.ClaudeText.Note" xml:space="preserve"><value>Первые 150 символов уйдут через серверы Telegram; сообщения ботам не сквозные.</value></data>
+  <data name="Agents.Recent" xml:space="preserve"><value>Последние уведомления агентов</value></data>
+  <data name="Agents.Recent.Empty" xml:space="preserve"><value>Пока нет.</value></data>
+  <data name="Hook.Done" xml:space="preserve"><value>{0}: Claude закончил</value></data>
+  <data name="Hook.Needs" xml:space="preserve"><value>{0}: нужен ответ</value></data>
+  <data name="Settings.Channels" xml:space="preserve"><value>Каналы</value></data>
+  <data name="Settings.Route" xml:space="preserve"><value>Маршрут</value></data>
+  <data name="Settings.Away" xml:space="preserve"><value>Считать, что я отошёл, через (мин)</value></data>
+  <data name="Settings.Away.Note" xml:space="preserve"><value>Маршрут «Авто»: на телефон, если столько не было ввода с клавиатуры и мыши.</value></data>
+  <data name="Settings.Busy" xml:space="preserve"><value>Телефон во время полноэкранных игр и презентаций</value></data>
+  <data name="Settings.Busy.Note" xml:space="preserve"><value>Windows в это время сама глушит тосты.</value></data>
+  <data name="Settings.Hotkey" xml:space="preserve"><value>Новый наблюдатель для активного окна</value></data>
+  <data name="Tg.Demo" xml:space="preserve"><value>демо</value></data>
+  <data name="Tg.NotSet" xml:space="preserve"><value>не настроен</value></data>
+  <data name="Tg.Step1" xml:space="preserve"><value>1. В Telegram открой @BotFather, отправь /newbot, задай имя (например, PingWhen) и username, скопируй токен.</value></data>
+  <data name="Tg.Step2" xml:space="preserve"><value>2. Вставь токен сюда. Он хранится зашифрованным (Windows DPAPI).</value></data>
+  <data name="Tg.Check" xml:space="preserve"><value>Проверить</value></data>
+  <data name="Tg.Step3" xml:space="preserve"><value>3. Привяжи бота к своему чату одноразовым кодом.</value></data>
+  <data name="Tg.Pair" xml:space="preserve"><value>Привязать</value></data>
+  <data name="Tg.OtherBot" xml:space="preserve"><value>Другой бот</value></data>
+  <data name="Tg.Open" xml:space="preserve"><value>Открыть в Telegram</value></data>
+  <data name="Tg.CancelPair" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Tg.OrSend" xml:space="preserve"><value>или отправь боту этот код:</value></data>
+  <data name="Tg.Waiting" xml:space="preserve"><value>жду… {0}</value></data>
+  <data name="Tg.CodeExpired" xml:space="preserve"><value>Код истёк. Нажми «Привязать» ещё раз.</value></data>
+  <data name="Tg.PairedTo" xml:space="preserve"><value>Привязано к {0} · @{1}</value></data>
+  <data name="Tg.Test" xml:space="preserve"><value>Тест</value></data>
+  <data name="Tg.TestSent" xml:space="preserve"><value>Отправлено</value></data>
+  <data name="Tg.Unpair" xml:space="preserve"><value>Отвязать</value></data>
+  <data name="Tg.Repair" xml:space="preserve"><value>Перепривязать</value></data>
+  <data name="Tg.DemoPush" xml:space="preserve"><value>Отправить демо-пуш</value></data>
+  <data name="Tg.DemoPush.NoBot" xml:space="preserve"><value>В настоящих настройках нет привязанного бота.</value></data>
+  <data name="Tg.Privacy" xml:space="preserve"><value>Сообщения идут через серверы Telegram: заголовки окон, имена процессов и файлов.</value></data>
+  <data name="Tg.Paired.Message" xml:space="preserve"><value>PingWhen привязан. Сюда будут приходить уведомления.</value></data>
+  <data name="Tg.Error.Network" xml:space="preserve"><value>Telegram недоступен. PingWhen повторит отправку; проверь сеть или VPN.</value></data>
+  <data name="Tg.Error.Token" xml:space="preserve"><value>Токен неверный. Скопируй его ещё раз у @BotFather.</value></data>
+  <data name="Tg.Error.Blocked" xml:space="preserve"><value>Бот заблокирован или чат удалён. Нажми «Перепривязать».</value></data>
+  <data name="Tg.Error.Webhook" xml:space="preserve"><value>У бота настроен webhook — создай для PingWhen отдельного бота.</value></data>
+  <data name="Tg.Error.OtherPoller" xml:space="preserve"><value>Этого бота уже опрашивает другая программа или другой ПК. Для каждого ПК нужен свой бот.</value></data>
+  <data name="Tg.Error.TooMany" xml:space="preserve"><value>Слишком много сообщений: Telegram просит подождать {0} с.</value></data>
+  <data name="Test.Title" xml:space="preserve"><value>PingWhen: тест</value></data>
+  <data name="Test.Body" xml:space="preserve"><value>Если ты это видишь, уведомления работают.</value></data>
+  <data name="Toast.OpenWindow" xml:space="preserve"><value>Открыть окно</value></data>
+  <data name="Tray.When" xml:space="preserve"><value>Скажи, когда…</value></data>
+  <data name="Tray.When.Process" xml:space="preserve"><value>Выбрать процесс…</value></data>
+  <data name="Tray.When.File" xml:space="preserve"><value>Файл…</value></data>
+  <data name="Tray.When.Quiet" xml:space="preserve"><value>Затишье системы…</value></data>
+  <data name="Tray.Active" xml:space="preserve"><value>Активные ({0})</value></data>
+  <data name="Tray.Dnd" xml:space="preserve"><value>Не беспокоить 1 ч</value></data>
+  <data name="Tray.DndOff" xml:space="preserve"><value>Включить уведомления</value></data>
+  <data name="Tray.Test" xml:space="preserve"><value>Тестовое уведомление</value></data>
+  <data name="Tray.Tooltip" xml:space="preserve"><value>Наблюдателей: {0} · ближайший: {1} {2}</value></data>
+  <data name="Exit.Confirm" xml:space="preserve"><value>Наблюдателей: {0}. Они продолжатся при следующем запуске. Выйти?</value></data>
+  <data name="Demo.Lang" xml:space="preserve"><value>ru</value></data>
+  <data name="Demo.Push" xml:space="preserve"><value>Готово: ffmpeg · 37 мин
+Процесс завершился, код 0</value></data>
 </root>

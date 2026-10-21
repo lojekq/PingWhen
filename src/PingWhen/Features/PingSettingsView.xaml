@@ -1,0 +1,86 @@
+<UserControl x:Class="PingWhen.Features.PingSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:l="clr-namespace:PingWhen.Shell">
+    <StackPanel>
+        <ui:TextBlock FontTypography="Subtitle" Text="{l:T Settings.Channels}" Margin="0,0,0,8" />
+
+        <!-- Telegram: three steps on one card (spec §5.5, §7) -->
+        <ui:Card Margin="0,0,0,4">
+            <StackPanel>
+                <Grid Margin="0,0,0,8">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Send24" Margin="0,0,10,0" />
+                        <ui:TextBlock FontTypography="BodyStrong" Text="Telegram" VerticalAlignment="Center" />
+                        <Border x:Name="DemoTag" CornerRadius="4" Padding="6,1" Margin="10,0,0,0" Background="{DynamicResource ControlFillColorSecondaryBrush}" VerticalAlignment="Center">
+                            <ui:TextBlock Text="{l:T Tg.Demo}" FontTypography="Caption" />
+                        </Border>
+                    </StackPanel>
+                    <ui:TextBlock x:Name="StatusText" HorizontalAlignment="Right" VerticalAlignment="Center" Appearance="Secondary" />
+                </Grid>
+
+                <StackPanel x:Name="SetupPanel">
+                    <ui:TextBlock Text="{l:T Tg.Step1}" TextWrapping="Wrap" />
+                    <ui:HyperlinkButton Content="t.me/BotFather" NavigateUri="https://t.me/BotFather" Padding="0" Margin="16,2,0,8" />
+                    <ui:TextBlock Text="{l:T Tg.Step2}" TextWrapping="Wrap" Margin="0,0,0,4" />
+                    <StackPanel Orientation="Horizontal" Margin="16,0,0,8">
+                        <PasswordBox x:Name="TokenBox" MinWidth="360" />
+                        <ui:Button x:Name="CheckButton" Content="{l:T Tg.Check}" Margin="8,0,0,0" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel x:Name="PairPanel">
+                    <ui:TextBlock Text="{l:T Tg.Step3}" TextWrapping="Wrap" Margin="0,0,0,4" />
+                    <StackPanel Orientation="Horizontal" Margin="16,0,0,0">
+                        <ui:Button x:Name="PairButton" Appearance="Primary" Content="{l:T Tg.Pair}" />
+                        <ui:Button x:Name="ForgetTokenButton" Content="{l:T Tg.OtherBot}" Margin="8,0,0,0" />
+                    </StackPanel>
+                    <StackPanel x:Name="CodePanel" Margin="16,8,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:Button x:Name="OpenTelegram" Appearance="Primary" Icon="{ui:SymbolIcon Open24}" Content="{l:T Tg.Open}" />
+                            <ui:Button x:Name="CancelPair" Content="{l:T Tg.CancelPair}" Margin="8,0,0,0" />
+                        </StackPanel>
+                        <ui:TextBlock Text="{l:T Tg.OrSend}" Appearance="Secondary" Margin="0,8,0,0" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox x:Name="CodeText" IsReadOnly="True" FontSize="28" FontFamily="Cascadia Mono, Consolas" BorderThickness="0" Background="Transparent" />
+                            <ui:TextBlock x:Name="WaitText" Appearance="Secondary" VerticalAlignment="Center" Margin="16,0,0,0" />
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel x:Name="PairedPanel" Orientation="Horizontal">
+                    <ui:Button x:Name="TestButton" Content="{l:T Tg.Test}" Icon="{ui:SymbolIcon Send24}" />
+                    <ui:Button x:Name="UnpairButton" Content="{l:T Tg.Unpair}" Margin="8,0,0,0" />
+                    <ui:Button x:Name="DemoPushButton" Content="{l:T Tg.DemoPush}" Margin="8,0,0,0" />
+                </StackPanel>
+
+                <ui:TextBlock x:Name="ErrorText" Foreground="{DynamicResource SystemFillColorCriticalBrush}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                <ui:TextBlock Text="{l:T Tg.Privacy}" FontTypography="Caption" Appearance="Tertiary" TextWrapping="Wrap" Margin="0,12,0,0" />
+            </StackPanel>
+        </ui:Card>
+
+        <ui:TextBlock FontTypography="Subtitle" Text="{l:T Settings.Route}" Margin="0,16,0,8" />
+        <ui:CardControl Icon="{ui:SymbolIcon PersonClock24}" Margin="0,0,0,4">
+            <ui:CardControl.Header>
+                <StackPanel>
+                    <ui:TextBlock Text="{l:T Settings.Away}" />
+                    <ui:TextBlock Text="{l:T Settings.Away.Note}" FontTypography="Caption" Appearance="Secondary" TextWrapping="Wrap" />
+                </StackPanel>
+            </ui:CardControl.Header>
+            <ui:NumberBox x:Name="AwayBox" Minimum="1" Maximum="120" MaxDecimalPlaces="0" SmallChange="1" MinWidth="120" ClearButtonEnabled="False" />
+        </ui:CardControl>
+        <ui:CardControl Icon="{ui:SymbolIcon Games24}" Margin="0,0,0,4">
+            <ui:CardControl.Header>
+                <StackPanel>
+                    <ui:TextBlock Text="{l:T Settings.Busy}" />
+                    <ui:TextBlock Text="{l:T Settings.Busy.Note}" FontTypography="Caption" Appearance="Secondary" TextWrapping="Wrap" />
+                </StackPanel>
+            </ui:CardControl.Header>
+            <ui:ToggleSwitch x:Name="BusySwitch" />
+        </ui:CardControl>
+        <ui:CardControl Header="{l:T Settings.Hotkey}" Icon="{ui:SymbolIcon Keyboard24}" Margin="0,0,0,4">
+            <ContentPresenter x:Name="HotkeyHost" />
+        </ui:CardControl>
+    </StackPanel>
+</UserControl>
