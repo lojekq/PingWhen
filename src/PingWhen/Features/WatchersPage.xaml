@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:l="clr-namespace:PingWhen.Shell"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}"
       xmlns:f="clr-namespace:PingWhen.Features">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="24,12,24,24" MaxWidth="900">
@@ -27,7 +28,7 @@
                                         <ui:TextBlock Text="{Binding Live}" FontTypography="Caption" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
                                         <ui:TextBlock Text="{Binding Author}" FontTypography="Caption" Appearance="Tertiary" Margin="12,0,0,0" />
                                     </StackPanel>
-                                    <ProgressBar Value="{Binding Progress, Mode=OneWay}" Maximum="1" Height="3" Margin="0,4,0,0" MaxWidth="240" HorizontalAlignment="Left" Visibility="{Binding ProgressVisibility}" />
+                                    <ProgressBar Value="{Binding Progress, Mode=OneWay}" Maximum="1" Height="3" Margin="0,4,0,0" Width="240" HorizontalAlignment="Left" Visibility="{Binding ProgressVisibility}" />
                                 </StackPanel>
                             </ui:CardControl.Header>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">

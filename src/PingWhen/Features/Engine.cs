@@ -389,15 +389,17 @@ public static class Fmt
         : d.TotalHours < 1 ? string.Format(Loc.T("Dur.M"), (int)d.TotalMinutes)
         : string.Format(Loc.T("Dur.HM"), (int)d.TotalHours, d.Minutes);
 
+    static IFormatProvider Ui => System.Globalization.CultureInfo.CurrentUICulture;
+
     public static string Bytes(long b) =>
-        b < 1024 * 1024 ? string.Format(Loc.T("Unit.KB"), (b / 1024.0).ToString("0"))
-        : b < 1024L * 1024 * 1024 ? string.Format(Loc.T("Unit.MB"), (b / 1048576.0).ToString("0"))
-        : string.Format(Loc.T("Unit.GB"), (b / 1073741824.0).ToString("0.0"));
+        b < 1024 * 1024 ? string.Format(Loc.T("Unit.KB"), (b / 1024.0).ToString("0", Ui))
+        : b < 1024L * 1024 * 1024 ? string.Format(Loc.T("Unit.MB"), (b / 1048576.0).ToString("0", Ui))
+        : string.Format(Loc.T("Unit.GB"), (b / 1073741824.0).ToString("0.0", Ui));
 
     public static string Metric(Metric m, double? v) => v is not { } x ? "—" : m switch
     {
-        Features.Metric.Disk => string.Format(Loc.T("Unit.MBs"), x.ToString(x < 10 ? "0.0" : "0")),
-        Features.Metric.Net => string.Format(Loc.T("Unit.KBs"), x.ToString("0")),
+        Features.Metric.Disk => string.Format(Loc.T("Unit.MBs"), x.ToString(x < 10 ? "0.0" : "0", Ui)),
+        Features.Metric.Net => string.Format(Loc.T("Unit.KBs"), x.ToString("0", Ui)),
         _ => $"{x:0} %",
     };
 

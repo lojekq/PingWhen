@@ -24,6 +24,9 @@ public partial class PingSettingsView
 
     static TelegramSettings T => DemoTelegram ?? Settings.Current.Telegram;
 
+    /// <summary>--page telegram: the settings page scrolled to this card (README screenshot).</summary>
+    public static bool Reveal { get; set; }
+
     public PingSettingsView()
     {
         InitializeComponent();
@@ -54,21 +57,25 @@ public partial class PingSettingsView
         };
         HotkeyHost.Content = box;
         Show();
+        if (Reveal) Loaded += (_, _) => Dispatcher.BeginInvoke(() => TelegramCard.BringIntoView(new Rect(0, -70, 1, TelegramCard.ActualHeight + 470)), System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
-    /// <summary>One of three states: no token, token checked (pair), paired.</summary>
+    /// <summary>All three steps stay visible; done steps show a check mark (spec §7: "three steps on one card").</summary>
     void Show(string? error = null)
     {
         var t = T;
         botUsername = t.BotUsername;
         var hasToken = t.Token is not null || DemoTelegram is not null;
-        SetupPanel.Visibility = hasToken ? Visibility.Collapsed : Visibility.Visible;
-        PairPanel.Visibility = hasToken && t.ChatId is null ? Visibility.Visible : Visibility.Collapsed;
+        var paired = t.ChatId is not null;
+        TokenRow.Visibility = hasToken ? Visibility.Collapsed : Visibility.Visible;
+        TokenDone.Visibility = hasToken ? Visibility.Visible : Visibility.Collapsed;
+        BotText.Text = "@" + t.BotUsername;
+        PairRow.Visibility = !paired && pairing is null ? Visibility.Visible : Visibility.Collapsed;
+        PairButton.IsEnabled = hasToken;
         CodePanel.Visibility = pairing is null ? Visibility.Collapsed : Visibility.Visible;
-        PairButton.IsEnabled = pairing is null;
-        PairedPanel.Visibility = t.ChatId is not null ? Visibility.Visible : Visibility.Collapsed;
-        StatusText.Text = t.ChatId is not null ? string.Format(Loc.T("Tg.PairedTo"), t.FirstName, t.BotUsername)
-            : hasToken ? "@" + t.BotUsername : Loc.T("Tg.NotSet");
+        PairedPanel.Visibility = paired ? Visibility.Visible : Visibility.Collapsed;
+        PairedText.Text = string.Format(Loc.T("Tg.PairedTo"), t.FirstName, t.BotUsername);
+        StatusText.Text = paired ? "" : hasToken ? "@" + t.BotUsername : Loc.T("Tg.NotSet");
         var err = error ?? (DemoTelegram is null ? Notifier.DeliveryError : null);
         ErrorText.Text = err ?? "";
         ErrorText.Visibility = err is null ? Visibility.Collapsed : Visibility.Visible;

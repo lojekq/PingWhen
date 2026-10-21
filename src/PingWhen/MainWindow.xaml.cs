@@ -12,7 +12,11 @@ public partial class MainWindow
     }
 
     /// <summary>By TargetPageTag: "main", "settings", "about", app pages.</summary>
-    public void Navigate(string page) => Nav.Navigate(page);
+    public void Navigate(string page)
+    {
+        if (page == "telegram") (Features.PingSettingsView.Reveal, page) = (true, "settings"); // settings scrolled to the Telegram card
+        Nav.Navigate(page);
+    }
 
     public void ShowUpdate(string version, string url)
     {

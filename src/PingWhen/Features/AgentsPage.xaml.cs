@@ -15,8 +15,8 @@ public partial class AgentsPage
 
     public static string HooksText(string exe)
     {
-        object Hook() => new[] { new { hooks = new[] { new { type = "command", command = exe, args = new[] { "--hook" }, timeout = 10 } } } };
-        return JsonSerializer.Serialize(new { hooks = new { Stop = Hook(), Notification = Hook() } }, new JsonSerializerOptions { WriteIndented = true });
+        var hook = $$"""[{ "hooks": [{ "type": "command", "command": {{JsonSerializer.Serialize(exe)}}, "args": ["--hook"], "timeout": 10 }] }]""";
+        return $"{{ \"hooks\": {{\r\n  \"Stop\":         {hook},\r\n  \"Notification\": {hook}\r\n}}}}";
     }
 
     sealed record SessionRow(string Client, string Folder, string Details);

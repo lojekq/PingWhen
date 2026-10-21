@@ -2,7 +2,8 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-      xmlns:l="clr-namespace:PingWhen.Shell">
+      xmlns:l="clr-namespace:PingWhen.Shell"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <Grid Margin="24,12,24,24" MaxWidth="900">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -30,8 +31,8 @@
                             <ColumnDefinition Width="90" />
                             <ColumnDefinition Width="130" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="80" />
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="90" />
+                            <ColumnDefinition Width="170" />
                         </Grid.ColumnDefinitions>
                         <ui:TextBlock Text="{Binding Time}" Appearance="Secondary" VerticalAlignment="Center" />
                         <Border Grid.Column="1" CornerRadius="4" Padding="8,2" HorizontalAlignment="Left" VerticalAlignment="Center" Background="{Binding Badge}">

@@ -33,7 +33,7 @@ public static class DemoData
         {
             var rate = 280 + Rng.Next(0, 60);
             size += rate / 1024.0;
-            gguf.Live = $"{string.Format(Loc.T("Unit.MB"), rate)}/{Loc.T("Unit.S")} · {string.Format(Loc.T("Unit.GB"), size.ToString("0.0"))}";
+            gguf.Live = $"{string.Format(Loc.T("Unit.MB"), rate)}/{Loc.T("Unit.S")} · {string.Format(Loc.T("Unit.GB"), size.ToString("0.0", System.Globalization.CultureInfo.CurrentUICulture))}";
             quiet = quiet >= 59 ? 18 : quiet + 1;
             steam.Live = $"{string.Format(Loc.T("Unit.KBs"), Rng.Next(0, 9))} · {string.Format(Loc.T("Live.Quiet"), quiet, 60)}";
             steam.Progress = quiet / 60.0;
@@ -48,31 +48,31 @@ public static class DemoData
             [
                 (4, Outcome.Done, "Готово: cargo build · 6 мин", "Процесс завершился, код 0", 372, "pc"),
                 (11, Outcome.Notify, "mlink: Claude закончил", "", 0, "pc,phone"),
-                (19, Outcome.Error, "Ошибка: npm test · код 1", "Процесс завершился с кодом 1", 95, "pc,phone"),
+                (19, Outcome.Error, "Ошибка: npm test · код 1", "Процесс завершился, код 1", 95, "pc,phone"),
                 (26, Outcome.Done, "Готово: setup-tools.msi · 2 мин", "Окно закрылось", 140, "pc"),
                 (41, Outcome.Quiet, "Затихло: Система · 9 мин", "Диск ниже 1 МБ/с 30 с", 540, "pc,phone"),
                 (58, Outcome.Done, "Готово: dataset.zip · 18 мин", "Файл исчез", 1080, "phone"),
                 (75, Outcome.Notify, "PingWhen: нужен ответ", "Claude needs your permission to use Bash", 0, "phone"),
                 (92, Outcome.Done, "Готово: python train.py · 1 ч 12 мин", "Процесс завершился, код 0", 4320, "pc,phone"),
                 (130, Outcome.Cancelled, "Отменён: blender", "", 0, ""),
-                (161, Outcome.Lost, "Потерян: render.exe", "Процесс не найден после перезапуска", 0, ""),
+                (161, Outcome.Lost, "Потерян: render.exe", "Не найден после перезапуска", 0, ""),
                 (190, Outcome.Done, "Готово: ollama pull · 7 мин", "Сеть ниже 100 КБ/с 60 с", 420, "pc"),
-                (240, Outcome.Error, "Ошибка: gradle · код 137", "Процесс завершился с кодом 137", 860, "pc,phone:failed"),
+                (240, Outcome.Error, "Ошибка: gradle · код 137", "Процесс завершился, код 137", 860, "pc,phone:failed"),
             ]
             :
             [
                 (4, Outcome.Done, "Done: cargo build · 6 min", "Process exited, code 0", 372, "pc"),
                 (11, Outcome.Notify, "mlink: Claude finished", "", 0, "pc,phone"),
-                (19, Outcome.Error, "Error: npm test · code 1", "Process exited with code 1", 95, "pc,phone"),
+                (19, Outcome.Error, "Error: npm test · code 1", "Process exited, code 1", 95, "pc,phone"),
                 (26, Outcome.Done, "Done: setup-tools.msi · 2 min", "Window closed", 140, "pc"),
                 (41, Outcome.Quiet, "Quiet: System · 9 min", "Disk below 1 MB/s for 30 s", 540, "pc,phone"),
                 (58, Outcome.Done, "Done: dataset.zip · 18 min", "File is gone", 1080, "phone"),
                 (75, Outcome.Notify, "PingWhen: needs your answer", "Claude needs your permission to use Bash", 0, "phone"),
                 (92, Outcome.Done, "Done: python train.py · 1 h 12 min", "Process exited, code 0", 4320, "pc,phone"),
                 (130, Outcome.Cancelled, "Cancelled: blender", "", 0, ""),
-                (161, Outcome.Lost, "Lost: render.exe", "Process not found after a restart", 0, ""),
+                (161, Outcome.Lost, "Lost: render.exe", "Not found after a restart", 0, ""),
                 (190, Outcome.Done, "Done: ollama pull · 7 min", "Network below 100 KB/s for 60 s", 420, "pc"),
-                (240, Outcome.Error, "Error: gradle · code 137", "Process exited with code 137", 860, "pc,phone:failed"),
+                (240, Outcome.Error, "Error: gradle · code 137", "Process exited, code 137", 860, "pc,phone:failed"),
             ];
         for (var i = 0; i < 20; i++)
         {

@@ -114,7 +114,8 @@ public partial class NewWatcherPage
         var kind = r.Kind ?? Kind.Window;
         (kind switch { Kind.Process => KindProcess, Kind.File => KindFile, Kind.Quiet => KindSystem, _ => KindWindow }).IsChecked = true;
         KindChanged();
-        WatchButton.Focus();
+        (CommandsPanel.IsVisible ? CommandsBox : (FrameworkElement)WindowBox).Focus();
+        Scroller.ScrollToTop();
     }
 
     static ImageSource? Icon(int pid) => ProcessInfo.ExePath(pid) is { } p ? ExeIcon.Get(p) : null;
