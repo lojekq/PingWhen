@@ -32,7 +32,10 @@ public static class Cli
         return 0;
     }
 
-    /// <summary>Always exit 0, never stdout: for Stop, exit 2 or output would mean "keep working".</summary>
+    /// <summary>
+    /// Always exit 0. Never stdout, except one JSON for a PermissionRequest answered from the phone (v1.0):
+    /// for Stop, exit 2 or output would mean "keep working".
+    /// </summary>
     public static int Hook(string[] args)
     {
         try
@@ -42,7 +45,13 @@ public static class Cli
             using var pipe = Connect("hook", TimeSpan.FromSeconds(5));
             if (pipe is null) return 0;
             var compact = JsonSerializer.Serialize(JsonDocument.Parse(json).RootElement); // one line on the pipe
-            Exchange(pipe, compact);
+            var permission = Hooks.Parse(json)?.Event == "PermissionRequest";
+            var answer = Exchange(pipe, compact, TimeSpan.FromSeconds(permission ? Permissions.HookTimeoutSeconds - 5 : 3));
+            if (permission && answer is not null && JsonDocument.Parse(answer).RootElement.TryGetProperty("decision", out var d) && d.GetString() is "allow" or "deny")
+            {
+                using var stdout = Console.OpenStandardOutput();
+                stdout.Write(System.Text.Encoding.UTF8.GetBytes(Permissions.Output(d.GetString()!) + "\n"));
+            }
         }
         catch (Exception e) { Log.Warn("hook failed", e); }
         return 0;
@@ -55,14 +64,19 @@ public static class Cli
         var (title, body) = args.Length <= 2 ? (args[0], args.ElementAtOrDefault(1) ?? "") : (string.Join(" ", args), "");
         using var pipe = Connect("notify", TimeSpan.FromSeconds(10));
         if (pipe is null) return 1;
-        return Exchange(pipe, JsonSerializer.Serialize(new { title, body })) ? 0 : 1;
+        return Exchange(pipe, JsonSerializer.Serialize(new { title, body }), TimeSpan.FromSeconds(3))?.Contains("\"ok\":true") == true ? 0 : 1;
     }
 
-    static bool Exchange(Stream pipe, string line)
+    /// <summary>Sends one line and returns the tray's answer line, or null on timeout.</summary>
+    static string? Exchange(Stream pipe, string line, TimeSpan timeout)
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-        PipeServer.WriteLine(pipe, line, cts.Token).GetAwaiter().GetResult();
-        return PipeServer.ReadLine(pipe, 4096, cts.Token).GetAwaiter().GetResult()?.Contains("\"ok\":true") == true;
+        using var cts = new CancellationTokenSource(timeout);
+        try
+        {
+            PipeServer.WriteLine(pipe, line, cts.Token).GetAwaiter().GetResult();
+            return PipeServer.ReadLine(pipe, 4096, cts.Token).GetAwaiter().GetResult();
+        }
+        catch (OperationCanceledException) { return null; }
     }
 
     /// <summary>Stdin up to <paramref name="max"/> bytes; null on timeout or overflow.</summary>

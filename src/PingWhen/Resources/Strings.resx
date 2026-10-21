@@ -287,4 +287,13 @@ Process exited, code 0</value></data>
   <data name="Live.WaitingChange" xml:space="preserve"><value>waiting for a change</value></data>
   <data name="Live.Unchanged" xml:space="preserve"><value>unchanged {0}/{1} s</value></data>
   <data name="Live.WatchingChange" xml:space="preserve"><value>watching for a change</value></data>
+  <data name="Perm.Setting" xml:space="preserve"><value>Answer Claude Code's permission prompts from the phone</value></data>
+  <data name="Perm.Setting.Note" xml:space="preserve"><value>Off by default. Whoever gets into your Telegram account can approve your agent's actions. Only "Allow once" and "Deny", only while you are away; add the PermissionRequest hook from the Agents page.</value></data>
+  <data name="Perm.Message" xml:space="preserve"><value>{0}</value></data>
+  <data name="Perm.Allow" xml:space="preserve"><value>Allow once</value></data>
+  <data name="Perm.Deny" xml:space="preserve"><value>Deny</value></data>
+  <data name="Perm.Allowed" xml:space="preserve"><value>Allowed from the phone</value></data>
+  <data name="Perm.Denied" xml:space="preserve"><value>Denied from the phone</value></data>
+  <data name="Perm.Expired" xml:space="preserve"><value>No answer: decide in the terminal.</value></data>
+  <data name="Perm.Gone" xml:space="preserve"><value>This request is no longer active</value></data>
 </root>

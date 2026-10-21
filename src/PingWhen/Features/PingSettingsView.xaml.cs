@@ -58,6 +58,8 @@ public partial class PingSettingsView
         HotkeyHost.Content = box;
         Show();
         InitNtfy();
+        PhoneAnswersBox.IsChecked = Settings.Current.PhoneAnswers;
+        PhoneAnswersBox.Click += (_, _) => { Settings.Current.PhoneAnswers = PhoneAnswersBox.IsChecked == true; Settings.Save(); };
         if (Reveal) Loaded += (_, _) => Dispatcher.BeginInvoke(() => TelegramCard.BringIntoView(new Rect(0, -70, 1, TelegramCard.ActualHeight + 470)), System.Windows.Threading.DispatcherPriority.Loaded);
     }
 

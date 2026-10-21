@@ -91,8 +91,8 @@ public static class PipeServer
             {
                 case "mcp": await Mcp.Serve(pipe, hello, ct); break;
                 case "hook":
-                    if (await ReadLine(pipe, 128 * 1024, ct) is { } hook) Hooks.Handle(hook, hello);
-                    await WriteLine(pipe, """{"ok":true}""", ct);
+                    var decision = await ReadLine(pipe, 128 * 1024, ct) is { } hook ? await Hooks.HandleAsync(hook, hello) : null;
+                    await WriteLine(pipe, decision is null ? """{"ok":true}""" : $$"""{"ok":true,"decision":"{{decision}}"}""", ct);
                     break;
                 case "notify":
                     var n = await ReadLine(pipe, 16 * 1024, ct) is { } s ? JsonNode.Parse(s) : null;
@@ -377,7 +377,8 @@ public static class Mcp
 /// <summary>Claude Code hooks, tray side (spec §5.6): the --hook process forwards the hook JSON here.</summary>
 public static class Hooks
 {
-    public sealed record Input(string Event, string? SessionId, string? Cwd, string? NotificationType, string? Message, bool StopHookActive, string? LastAssistantMessage)
+    public sealed record Input(string Event, string? SessionId, string? Cwd, string? NotificationType, string? Message, bool StopHookActive, string? LastAssistantMessage,
+        string? ToolName = null, JsonElement? ToolInput = null)
     {
         public string Folder => Path.GetFileName((Cwd ?? "").TrimEnd('\\', '/')) is { Length: > 0 } f ? f : "Claude";
     }
@@ -393,7 +394,8 @@ public static class Hooks
             string? S(string n) => r.TryGetProperty(n, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
             return S("hook_event_name") is { } e
                 ? new Input(e, S("session_id"), S("cwd"), S("notification_type"), S("message"),
-                    r.TryGetProperty("stop_hook_active", out var a) && a.ValueKind == JsonValueKind.True, S("last_assistant_message"))
+                    r.TryGetProperty("stop_hook_active", out var a) && a.ValueKind == JsonValueKind.True, S("last_assistant_message"),
+                    S("tool_name"), r.TryGetProperty("tool_input", out var ti) ? ti.Clone() : null)
                 : null;
         }
         catch (JsonException) { return null; }
@@ -425,6 +427,14 @@ public static class Hooks
     }
 
     static readonly Dictionary<string, DateTime> LastStop = [], TurnStart = [];
+
+    /// <summary>v1.0: PermissionRequest waits for a phone button; "allow" / "deny" / null.</summary>
+    public static async Task<string?> HandleAsync(string json, Hello hello)
+    {
+        if (Parse(json) is { Event: "PermissionRequest" } e) return await Permissions.Ask(e);
+        Handle(json, hello);
+        return null;
+    }
 
     public static void Handle(string json, Hello hello)
     {

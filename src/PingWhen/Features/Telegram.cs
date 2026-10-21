@@ -105,8 +105,24 @@ namespace PingWhen.Features
             return me.GetProperty("username").GetString() ?? "";
         }
 
-        public async Task<JsonElement> GetUpdates(long offset, int timeout, CancellationToken ct) =>
-            await Call("getUpdates", new { offset, timeout, allowed_updates = new[] { "message" } }, TimeSpan.FromSeconds(timeout + 10), ct);
+        public async Task<JsonElement> GetUpdates(long offset, int timeout, CancellationToken ct, string allowed = "message") =>
+            await Call("getUpdates", new { offset, timeout, allowed_updates = new[] { allowed } }, TimeSpan.FromSeconds(timeout + 10), ct);
+
+        /// <summary>v1.0: a message with one row of inline buttons (text, callback_data ≤ 64 bytes); returns its message_id.</summary>
+        public async Task<long> SendButtons(long chatId, string text, (string Text, string Data)[] buttons)
+        {
+            var markup = new { inline_keyboard = new[] { buttons.Select(b => new { text = b.Text, callback_data = b.Data }).ToArray() } };
+            var m = await Call("sendMessage", new { chat_id = chatId, text = Fmt.Cut(text, MaxText), reply_markup = markup }, TimeSpan.FromSeconds(30));
+            return m.GetProperty("message_id").GetInt64();
+        }
+
+        /// <summary>Required after a press, or the button keeps spinning.</summary>
+        public Task AnswerCallback(string queryId, string text) =>
+            Call("answerCallbackQuery", new { callback_query_id = queryId, text }, TimeSpan.FromSeconds(15));
+
+        /// <summary>Replaces the text and drops the buttons.</summary>
+        public Task EditText(long chatId, long messageId, string text) =>
+            Call("editMessageText", new { chat_id = chatId, message_id = messageId, text = Fmt.Cut(text, MaxText) }, TimeSpan.FromSeconds(15));
 
         public const int MaxText = 4096;
 

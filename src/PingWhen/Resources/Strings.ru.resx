@@ -287,4 +287,13 @@
   <data name="Live.WaitingChange" xml:space="preserve"><value>ждём изменений</value></data>
   <data name="Live.Unchanged" xml:space="preserve"><value>не меняется {0}/{1} с</value></data>
   <data name="Live.WatchingChange" xml:space="preserve"><value>следим за изменениями</value></data>
+  <data name="Perm.Setting" xml:space="preserve"><value>Отвечать на запросы разрешения Claude Code с телефона</value></data>
+  <data name="Perm.Setting.Note" xml:space="preserve"><value>По умолчанию выключено. Кто получит доступ к твоему аккаунту Telegram, сможет одобрять действия агента. Только «Разрешить один раз» и «Отклонить», только когда ты отошёл; добавь хук PermissionRequest со страницы «Агенты».</value></data>
+  <data name="Perm.Message" xml:space="preserve"><value>{0}</value></data>
+  <data name="Perm.Allow" xml:space="preserve"><value>Разрешить один раз</value></data>
+  <data name="Perm.Deny" xml:space="preserve"><value>Отклонить</value></data>
+  <data name="Perm.Allowed" xml:space="preserve"><value>Разрешено с телефона</value></data>
+  <data name="Perm.Denied" xml:space="preserve"><value>Отклонено с телефона</value></data>
+  <data name="Perm.Expired" xml:space="preserve"><value>Нет ответа — реши в терминале.</value></data>
+  <data name="Perm.Gone" xml:space="preserve"><value>Этот запрос уже не активен</value></data>
 </root>

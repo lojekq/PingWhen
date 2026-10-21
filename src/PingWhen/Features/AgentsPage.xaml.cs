@@ -13,9 +13,12 @@ public partial class AgentsPage
     public static string McpText(string exe) =>
         $"claude mcp add --scope user --transport stdio pingwhen -- \"{exe}\" --mcp\r\nclaude mcp list";
 
-    public static string HooksText(string exe)
+    public static string HooksText(string exe, bool permission = false)
     {
-        var hook = $$"""[{ "hooks": [{ "type": "command", "command": {{JsonSerializer.Serialize(exe)}}, "args": ["--hook"], "timeout": 10 }] }]""";
+        string Hook(int timeout) => $$"""[{ "hooks": [{ "type": "command", "command": {{JsonSerializer.Serialize(exe)}}, "args": ["--hook"], "timeout": {{timeout}} }] }]""";
+        var hook = Hook(10);
+        if (permission)
+            return $"{{ \"hooks\": {{\r\n  \"Stop\":              {hook},\r\n  \"Notification\":      {hook},\r\n  \"UserPromptSubmit\":  {hook},\r\n  \"PermissionRequest\": {Hook(Permissions.HookTimeoutSeconds)}\r\n}}}}";
         return $"{{ \"hooks\": {{\r\n  \"Stop\":             {hook},\r\n  \"Notification\":     {hook},\r\n  \"UserPromptSubmit\": {hook}\r\n}}}}";
     }
 
@@ -31,7 +34,7 @@ public partial class AgentsPage
         var exe = ExeForCommands;
         MoveBar.IsOpen = !Args.Current.Demo && !Install.IsInstalled;
         McpCommand.Text = McpText(exe);
-        HooksJson.Text = HooksText(exe);
+        HooksJson.Text = HooksText(exe, Settings.Current.PhoneAnswers);
         CopyMcp.Click += (_, _) => Copy(McpCommand.Text);
         CopyHooks.Click += (_, _) => Copy(HooksJson.Text);
         ClaudeText.IsChecked = Settings.Current.ClaudeTextToPhone;

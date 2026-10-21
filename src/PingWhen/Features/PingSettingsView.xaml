@@ -64,6 +64,8 @@
                         <ui:SymbolIcon Symbol="CheckmarkCircle24" Filled="True" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0" />
                         <ui:TextBlock x:Name="PairedText" VerticalAlignment="Center" />
                     </StackPanel>
+                    <CheckBox x:Name="PhoneAnswersBox" Content="{l:T Perm.Setting}" Margin="0,0,0,2" />
+                    <ui:TextBlock Text="{l:T Perm.Setting.Note}" FontTypography="Caption" Appearance="Tertiary" TextWrapping="Wrap" Margin="28,0,0,8" />
                     <StackPanel Orientation="Horizontal">
                         <ui:Button x:Name="TestButton" Content="{l:T Tg.Test}" Icon="{ui:SymbolIcon Send24}" />
                         <ui:Button x:Name="UnpairButton" Content="{l:T Tg.Unpair}" Margin="8,0,0,0" />
