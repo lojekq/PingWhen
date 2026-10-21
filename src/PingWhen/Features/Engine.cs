@@ -269,7 +269,8 @@ public sealed class Engine
     void TickProcess(Live l, ProcessTree? tree)
     {
         var w = l.W;
-        l.Text = Fmt.Duration(Duration(w));
+        var running = w.Processes.Where(p => !l.Exited.ContainsKey(p.Pid)).ToList();
+        l.Text = string.Join(", ", running.Select(p => p.Name).Distinct()) + (running.Count > 1 ? $" · {running.Count}" : "");
         if (tree is null) return;
         bool Alive(int pid, DateTime? started) => tree[pid] is { } n && Targets.Same(n.Started, started);
         foreach (var p in w.Processes.Where(p => !l.Exited.ContainsKey(p.Pid) && l.Handles.All(h => h.Id != p.Pid)))

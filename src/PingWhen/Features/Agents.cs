@@ -162,7 +162,7 @@ public static class Mcp
 
     static void Identify(AgentSession s, McpServer server)
     {
-        if (server.ClientInfo?.Name is { Length: > 0 } n && n != s.Client) Ui(() => s.Client = n);
+        if (server.ClientInfo?.Name is { Length: > 0 } n && n != s.Client) s.Client = n; // now: the same request may create a watcher with s.Key
     }
 
     public static IEnumerable<McpServerTool> Tools(AgentSession s)
