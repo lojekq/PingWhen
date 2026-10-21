@@ -57,6 +57,7 @@ public partial class PingSettingsView
         };
         HotkeyHost.Content = box;
         Show();
+        InitNtfy();
         if (Reveal) Loaded += (_, _) => Dispatcher.BeginInvoke(() => TelegramCard.BringIntoView(new Rect(0, -70, 1, TelegramCard.ActualHeight + 470)), System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
@@ -107,6 +108,7 @@ public partial class PingSettingsView
         code = Pairing.NewCode();
         pairUntil = DateTime.UtcNow + Pairing.Lifetime;
         CodeText.Text = code;
+        PairQr.Source = Qr($"https://t.me/{botUsername}?start={code}"); // for phones without Telegram on this PC
         using var cts = pairing = new CancellationTokenSource(Pairing.Lifetime);
         countdown.Start();
         Countdown();
@@ -130,6 +132,79 @@ public partial class PingSettingsView
             pairing = null;
         }
         Show(error);
+    }
+
+    /// <summary>QR code as a frozen bitmap (QRCoder's PNG writer, no System.Drawing).</summary>
+    static System.Windows.Media.ImageSource Qr(string text)
+    {
+        using var data = new QRCoder.QRCodeGenerator().CreateQrCode(text, QRCoder.QRCodeGenerator.ECCLevel.M);
+        var png = new QRCoder.PngByteQRCode(data).GetGraphic(8);
+        var img = new System.Windows.Media.Imaging.BitmapImage();
+        img.BeginInit();
+        img.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+        img.StreamSource = new System.IO.MemoryStream(png);
+        img.EndInit();
+        img.Freeze();
+        return img;
+    }
+
+    void InitNtfy()
+    {
+        var n = Settings.Current.Ntfy;
+        NtfyOn.IsChecked = n.Enabled;
+        NtfyServer.Text = n.Server;
+        NtfyTopic.Text = n.Topic ?? "";
+        NtfyOn.Click += (_, _) =>
+        {
+            n.Enabled = NtfyOn.IsChecked == true;
+            if (n.Enabled && string.IsNullOrWhiteSpace(n.Topic)) NtfyTopic.Text = n.Topic = NtfySettings.NewTopic();
+            Settings.Save();
+            Notifier.Reconnect();
+            ShowNtfy();
+        };
+        NtfyNewTopic.Click += (_, _) => NtfyTopic.Text = NtfySettings.NewTopic();
+        NtfySave.Click += (_, _) => SaveNtfy();
+        NtfyTest.Click += async (_, _) =>
+        {
+            if (!SaveNtfy()) return;
+            NtfyTest.IsEnabled = false;
+            try
+            {
+                await new Ntfy(n).Send(Loc.T("Test.Title"), Loc.T("Test.Body"), Priority.Default);
+                NtfyStatus.Text = Loc.T("Tg.TestSent");
+            }
+            catch (TgError e) { NtfyStatus.Text = Ntfy.Describe(e); }
+            catch (Exception e) { NtfyStatus.Text = e.Message; }
+            finally { NtfyTest.IsEnabled = true; }
+        };
+        ShowNtfy();
+    }
+
+    /// <summary>Server must be an http(s) URL; topic 1–64 of A-Z a-z 0-9 _ -; an empty token box keeps the saved token.</summary>
+    bool SaveNtfy()
+    {
+        var n = Settings.Current.Ntfy;
+        var server = NtfyServer.Text.Trim().TrimEnd('/');
+        var topic = NtfyTopic.Text.Trim();
+        if (!Uri.TryCreate(server, UriKind.Absolute, out var u) || u.Scheme is not ("http" or "https")) { NtfyStatus.Text = Loc.T("Ntfy.Error.Server"); return false; }
+        if (!System.Text.RegularExpressions.Regex.IsMatch(topic, "^[A-Za-z0-9_-]{1,64}$")) { NtfyStatus.Text = Loc.T("Ntfy.Error.Topic"); return false; }
+        (n.Server, n.Topic) = (server, topic);
+        if (NtfyToken.Password.Trim() is { Length: > 0 } token) n.Token = TelegramSettings.Protect(token);
+        NtfyToken.Clear();
+        Settings.Save();
+        Notifier.Reconnect();
+        NtfyStatus.Text = "";
+        ShowNtfy();
+        return true;
+    }
+
+    void ShowNtfy()
+    {
+        var n = Settings.Current.Ntfy;
+        NtfyPanel.Visibility = n.Enabled ? Visibility.Visible : Visibility.Collapsed;
+        NtfyQrPanel.Visibility = n.Ready ? Visibility.Visible : Visibility.Collapsed;
+        if (n.Ready) NtfyQr.Source = Qr(n.SubscribeLink);
+        NtfyToken.Tag = n.Token is null ? null : "set";
     }
 
     void Countdown()

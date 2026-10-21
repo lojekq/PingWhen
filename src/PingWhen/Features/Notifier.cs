@@ -57,7 +57,7 @@ namespace PingWhen.Features
     /// Phone messages: events within 3 s are merged into one; 3 retries (5 s, 30 s, 2 min; 429 waits retry_after if longer);
     /// 400/401/403 are not retried. Failures go to history and the tray icon.
     /// </summary>
-    public sealed class Outbox(Func<string, bool, CancellationToken, Task> send)
+    public sealed class Outbox(Func<IReadOnlyList<Note>, CancellationToken, Task> send)
     {
         public static readonly TimeSpan MergeWindow = TimeSpan.FromSeconds(3);
         static readonly TimeSpan[] Schedule = [TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(2)];
@@ -100,12 +100,11 @@ namespace PingWhen.Features
             try { await Task.Delay(MergeWindow, stop.Token); } catch (OperationCanceledException) { } // exit flushes at once
             List<Note> batch;
             lock (gate) { batch = pending!; pending = null; }
-            var (text, silent) = Merge(batch);
             for (var failures = 0; ; )
             {
                 try
                 {
-                    await send(text, silent, CancellationToken.None);
+                    await send(batch, CancellationToken.None);
                     Delivered?.Invoke(batch);
                     return;
                 }
@@ -138,12 +137,10 @@ namespace PingWhen.Features
         public static string? DeliveryError { get; private set; }
         public static event Action? StateChanged;
 
-        static Outbox? outbox;
-        static Telegram? bot;
-        static long chatId;
+        static (string Name, Outbox Box)[] phones = []; // "phone" = Telegram, "ntfy"; swapped whole, read from any thread
         static bool phoneOff; // --demo: the phone gets nothing but the demo push
 
-        public static bool PhoneReady => bot is not null;
+        public static bool PhoneReady => phones.Length > 0;
 
         public static void Start(bool phone)
         {
@@ -152,25 +149,45 @@ namespace PingWhen.Features
             Reconnect();
         }
 
-        /// <summary>After pairing, unpairing or a new token.</summary>
+        /// <summary>After pairing, unpairing, a new token or ntfy settings. Pending sends of the old channels still finish.</summary>
         public static void Reconnect()
         {
-            var t = Settings.Current.Telegram;
-            bot = !phoneOff && t.Paired && t.Unprotect() is { } token ? new Telegram(token) : null;
-            chatId = t.ChatId ?? 0;
-            if (bot is null) { outbox = null; return; }
-            var b = bot;
-            outbox = new Outbox((text, silent, ct) => b.SendMessage(chatId, text, silent, ct));
-            outbox.Delivered += batch =>
+            var list = new List<(string, Outbox)>();
+            if (!phoneOff)
+            {
+                var t = Settings.Current.Telegram;
+                if (t.Paired && t.Unprotect() is { } token)
+                {
+                    var bot = new Telegram(token);
+                    var chat = t.ChatId!.Value;
+                    list.Add(Channel("phone", (batch, ct) => { var (text, silent) = Outbox.Merge(batch); return bot.SendMessage(chat, text, silent, ct); }, Telegram.Describe));
+                }
+                var n = Settings.Current.Ntfy;
+                if (n.Ready)
+                {
+                    var ntfy = new Ntfy(n);
+                    list.Add(Channel("ntfy", (batch, ct) => batch.Count == 1
+                        ? ntfy.Send(batch[0].Title, batch[0].Body, batch[0].Priority, ct)
+                        : ntfy.Send($"{AppInfo.DisplayName} · {batch.Count}", Outbox.Merge(batch).Text, batch.Max(b => b.Priority), ct), Ntfy.Describe));
+                }
+            }
+            phones = [.. list];
+        }
+
+        static (string, Outbox) Channel(string name, Func<IReadOnlyList<Note>, CancellationToken, Task> send, Func<TgError, string> describe)
+        {
+            var box = new Outbox(send);
+            box.Delivered += batch =>
             {
                 SetError(null);
-                foreach (var n in batch) Mark(n.HistoryId, "phone");
+                foreach (var n in batch) Mark(n.HistoryId, name);
             };
-            outbox.Failed += (batch, e) =>
+            box.Failed += (batch, e) =>
             {
-                SetError(Telegram.Describe(e));
-                foreach (var n in batch) Mark(n.HistoryId, "phone:failed");
+                SetError(describe(e));
+                foreach (var n in batch) Mark(n.HistoryId, name + ":failed");
             };
+            return (name, box);
         }
 
         static void SetError(string? e)
@@ -189,7 +206,7 @@ namespace PingWhen.Features
             if (Sink is not null) return Sink(n);
             var (pc, phone) = Router.Decide(n.Route, Router.Now());
             if (pc) Toast.Show(n);
-            if (phone) outbox?.Enqueue(n);
+            if (phone) foreach (var p in phones) p.Box.Enqueue(n);
             return (pc, phone);
         }
 
@@ -215,7 +232,8 @@ namespace PingWhen.Features
             return r;
         }
 
-        static string Channels(bool pc, bool phone) => string.Join(",", new[] { pc ? "pc" : null, phone ? "phone:queued" : null }.OfType<string>());
+        static string Channels(bool pc, bool phone) =>
+            string.Join(",", (pc ? ["pc"] : Array.Empty<string>()).Concat(phone ? phones.Select(p => p.Name + ":queued") : []));
 
         static void Record(HistoryEntry e)
         {
@@ -227,14 +245,16 @@ namespace PingWhen.Features
             });
         }
 
-        static void Mark(string? id, string phone)
+        /// <summary>Delivery result of one channel: "phone", "ntfy:failed" replaces that channel's "…:queued".</summary>
+        static void Mark(string? id, string result)
         {
             if (id is null) return;
+            var name = result.Split(':')[0];
             Ui(() =>
             {
                 var i = History.ToList().FindIndex(h => h.Id == id);
                 if (i < 0) return;
-                var e = History[i] with { Channels = string.Join(",", History[i].Channels.Split(',').Where(c => c.Length > 0 && !c.StartsWith("phone")).Append(phone)) };
+                var e = History[i] with { Channels = string.Join(",", History[i].Channels.Split(',').Where(c => c.Length > 0 && c.Split(':')[0] != name).Append(result)) };
                 History[i] = e;
                 Store.Append(e);
             });
@@ -255,7 +275,10 @@ namespace PingWhen.Features
         /// <summary>Settings → Test, tray → Test notification: both channels, ignoring the route.</summary>
         public static void Test() => Notify(Loc.T("Test.Title"), Loc.T("Test.Body"), Priority.Default, PhoneReady ? Route.Both : Route.Pc, "test");
 
-        public static void Flush() => outbox?.Flush(TimeSpan.FromSeconds(3));
+        public static void Flush()
+        {
+            foreach (var p in phones) p.Box.Flush(TimeSpan.FromSeconds(3));
+        }
     }
 
     /// <summary>

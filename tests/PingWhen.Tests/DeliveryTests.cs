@@ -78,7 +78,7 @@ public class DeliveryTests
     public async Task OutboxMergesSendsOnceAndReportsFailure()
     {
         var sent = new List<string>();
-        var box = new Outbox((text, _, _) => { sent.Add(text); throw new TgError(403, "Forbidden: bot was blocked by the user"); });
+        var box = new Outbox((batch, _) => { sent.Add(Outbox.Merge(batch).Text); throw new TgError(403, "Forbidden: bot was blocked by the user"); });
         var failed = new TaskCompletionSource<int>();
         box.Failed += (batch, e) => failed.TrySetResult(batch.Count * 1000 + e.Code);
         box.Enqueue(new Note("a", "1"));

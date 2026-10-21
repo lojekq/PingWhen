@@ -52,6 +52,12 @@
                         <TextBox x:Name="CodeText" IsReadOnly="True" FontSize="28" FontFamily="Cascadia Mono, Consolas" BorderThickness="0" Background="Transparent" />
                         <ui:TextBlock x:Name="WaitText" Appearance="Secondary" VerticalAlignment="Center" Margin="16,0,0,0" />
                     </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Border Background="White" Padding="6" CornerRadius="4">
+                            <Image x:Name="PairQr" Width="120" Height="120" RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                        </Border>
+                        <ui:TextBlock Text="{l:T Tg.QrHint}" TextWrapping="Wrap" MaxWidth="320" VerticalAlignment="Center" Margin="12,0,0,0" Appearance="Secondary" />
+                    </StackPanel>
                 </StackPanel>
                 <StackPanel x:Name="PairedPanel" Margin="16,0,0,0">
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
@@ -67,6 +73,54 @@
 
                 <ui:TextBlock x:Name="ErrorText" Foreground="{DynamicResource SystemFillColorCriticalBrush}" TextWrapping="Wrap" Margin="0,8,0,0" />
                 <ui:TextBlock Text="{l:T Tg.Privacy}" FontTypography="Caption" Appearance="Tertiary" TextWrapping="Wrap" Margin="0,12,0,0" />
+            </StackPanel>
+        </ui:Card>
+
+
+        <!-- ntfy (v1.0): second phone channel, ntfy.sh or your own server -->
+        <ui:Card Margin="0,8,0,4">
+            <StackPanel>
+                <Grid Margin="0,0,0,8">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Alert24" Margin="0,0,10,0" />
+                        <ui:TextBlock FontTypography="BodyStrong" Text="ntfy" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <ui:ToggleSwitch x:Name="NtfyOn" HorizontalAlignment="Right" />
+                </Grid>
+                <ui:TextBlock Text="{l:T Ntfy.Intro}" TextWrapping="Wrap" Appearance="Secondary" />
+                <StackPanel x:Name="NtfyPanel" Margin="0,8,0,0">
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="110" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <ui:TextBlock Text="{l:T Ntfy.Server}" VerticalAlignment="Center" />
+                        <ui:TextBox x:Name="NtfyServer" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,0,0,6" />
+                        <ui:TextBlock Grid.Row="1" Text="{l:T Ntfy.Topic}" VerticalAlignment="Center" />
+                        <ui:TextBox x:Name="NtfyTopic" Grid.Row="1" Grid.Column="1" FontFamily="Cascadia Mono, Consolas" Margin="0,0,0,6" />
+                        <ui:Button x:Name="NtfyNewTopic" Grid.Row="1" Grid.Column="2" Content="{l:T Ntfy.Generate}" Margin="8,0,0,6" />
+                        <ui:TextBlock Grid.Row="2" Text="{l:T Ntfy.Token}" VerticalAlignment="Center" />
+                        <PasswordBox x:Name="NtfyToken" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" />
+                    </Grid>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:Button x:Name="NtfySave" Appearance="Primary" Content="{l:T Ntfy.Save}" />
+                        <ui:Button x:Name="NtfyTest" Content="{l:T Tg.Test}" Icon="{ui:SymbolIcon Send24}" Margin="8,0,0,0" />
+                        <ui:TextBlock x:Name="NtfyStatus" Appearance="Secondary" VerticalAlignment="Center" Margin="12,0,0,0" />
+                    </StackPanel>
+                    <StackPanel x:Name="NtfyQrPanel" Orientation="Horizontal" Margin="0,12,0,0">
+                        <Border Background="White" Padding="6" CornerRadius="4">
+                            <Image x:Name="NtfyQr" Width="132" Height="132" RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                        </Border>
+                        <ui:TextBlock Text="{l:T Ntfy.QrHint}" TextWrapping="Wrap" MaxWidth="360" VerticalAlignment="Center" Margin="12,0,0,0" Appearance="Secondary" />
+                    </StackPanel>
+                    <ui:TextBlock Text="{l:T Ntfy.Privacy}" FontTypography="Caption" Appearance="Tertiary" TextWrapping="Wrap" Margin="0,12,0,0" />
+                </StackPanel>
             </StackPanel>
         </ui:Card>
 

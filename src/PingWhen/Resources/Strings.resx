@@ -244,4 +244,21 @@ Process exited, code 0</value></data>
   <data name="New.Minutes" xml:space="preserve"><value>minutes</value></data>
   <data name="Agents.StopMin" xml:space="preserve"><value>"Claude finished" only after turns of at least</value></data>
   <data name="Agents.StopMin.Note" xml:space="preserve"><value>0 = after every turn. Needs the UserPromptSubmit hook from the JSON above.</value></data>
+  <data name="Ntfy.Intro" xml:space="preserve"><value>A second phone channel: the ntfy app (Android, iOS) or a browser. Use ntfy.sh or your own server. Works where Telegram is blocked.</value></data>
+  <data name="Ntfy.Server" xml:space="preserve"><value>Server</value></data>
+  <data name="Ntfy.Topic" xml:space="preserve"><value>Topic</value></data>
+  <data name="Ntfy.Token" xml:space="preserve"><value>Token (optional)</value></data>
+  <data name="Ntfy.Generate" xml:space="preserve"><value>New topic</value></data>
+  <data name="Ntfy.Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Ntfy.QrHint" xml:space="preserve"><value>Scan with the ntfy app to subscribe to this topic.</value></data>
+  <data name="Ntfy.Privacy" xml:space="preserve"><value>Anyone who knows the topic reads the messages: keep it secret, or use your own server with a token. On ntfy.sh messages are kept for 3 hours.</value></data>
+  <data name="Ntfy.Error.Network" xml:space="preserve"><value>The ntfy server is not reachable. PingWhen retries.</value></data>
+  <data name="Ntfy.Error.Denied" xml:space="preserve"><value>ntfy refused: check the topic and the token.</value></data>
+  <data name="Ntfy.Error.TooMany" xml:space="preserve"><value>ntfy limit reached (ntfy.sh: 250 messages a day).</value></data>
+  <data name="Ntfy.Error.Server" xml:space="preserve"><value>Enter the server address, for example https://ntfy.sh.</value></data>
+  <data name="Ntfy.Error.Topic" xml:space="preserve"><value>Topic: 1–64 letters, digits, _ or -.</value></data>
+  <data name="Tg.QrHint" xml:space="preserve"><value>No Telegram on this PC? Scan with the phone camera.</value></data>
+  <data name="Channel.ntfy" xml:space="preserve"><value>ntfy</value></data>
+  <data name="Channel.ntfy.queued" xml:space="preserve"><value>ntfy…</value></data>
+  <data name="Channel.ntfy.failed" xml:space="preserve"><value>ntfy: not delivered</value></data>
 </root>
