@@ -6,9 +6,11 @@ public static class Program
 {
     // App verbs (00-shared §2.3): run before the mutex and without a WPF Application,
     // return the exit code and never write to the console (stdio belongs to the verb, e.g. --mcp).
-    // Example: ["--snapshot"] = Snapshot.Run,
     internal static readonly Dictionary<string, Func<string[], int>> Verbs = new()
     {
+        ["--mcp"] = Features.Cli.Mcp,
+        ["--hook"] = Features.Cli.Hook,
+        ["--notify"] = Features.Cli.Notify,
     };
 
     [STAThread]

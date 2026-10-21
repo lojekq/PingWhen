@@ -42,3 +42,15 @@ CoTaskMemFree
 WINEVENT_OUTOFCONTEXT
 WINEVENT_SKIPOWNPROCESS
 UNICODE_STRING
+// PingWhen
+IsWindow
+IsIconic
+ShowWindow
+SetForegroundWindow
+GetForegroundWindow
+GetLastInputInfo
+GetProcessIoCounters
+PowerCreateRequest
+PowerSetRequest
+PowerClearRequest
+POWER_REQUEST_CONTEXT_VERSION
