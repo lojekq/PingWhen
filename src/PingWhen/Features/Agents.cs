@@ -62,6 +62,7 @@ public static class PipeServer
             }
         }
         catch (OperationCanceledException) { }
+        catch (Exception e) { Log.Error("pipe server stopped", e); } // e.g. the name is taken by another user's pipe: agents are off, the app lives
         finally { Running = false; }
     }
 

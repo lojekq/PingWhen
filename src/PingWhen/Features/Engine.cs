@@ -207,6 +207,7 @@ public sealed class Engine
         using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
         Task<bool>? tick = null, read = null;
         while (true)
+        try
         {
             while (commands.Reader.TryRead(out var cmd))
                 try { cmd(); } catch (Exception e) { Log.Error("engine command", e); }
@@ -227,6 +228,7 @@ public sealed class Engine
             try { Tick(); } catch (Exception e) { Log.Error("engine tick", e); }
             if (dirty && Environment.TickCount64 - lastSave >= 1000) Save(); // debounce 1 s
         }
+        catch (Exception e) { Log.Error("engine loop", e); await Task.Delay(1000); } // never let the loop die
     }
 
     void Save()

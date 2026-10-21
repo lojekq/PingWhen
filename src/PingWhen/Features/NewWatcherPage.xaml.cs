@@ -60,7 +60,11 @@ public partial class NewWatcherPage
         MetricBox.SelectionChanged += (_, _) => MetricChanged();
         FilePath.TextChanged += (_, _) => RefreshTitle();
         Browse.Click += (_, _) => BrowseFile();
-        WatchButton.Click += async (_, _) => await Watch();
+        WatchButton.Click += async (_, _) =>
+        {
+            try { await Watch(); }
+            catch (Exception e) { Log.Error("watch", e); ErrorBar.Title = e.Message; ErrorBar.IsOpen = true; }
+        };
         CancelButton.Click += (_, _) => App.ShowMain("main");
         Loaded += (_, _) =>
         {
@@ -169,7 +173,12 @@ public partial class NewWatcherPage
                 .Where(x => x.path is not null)
                 .Select(x => new Item(x.p, $"{x.p.Exe} · {x.p.Pid}{(x.cmd is null ? "" : " · " + Fmt.Cut(Terminals.Short(x.cmd), 90))}", ExeIcon.Get(x.path!)))
                 .OrderBy(i => ((ProcessNode)i.Value).Exe, StringComparer.OrdinalIgnoreCase).ToList())
-            .ContinueWith(t => { allProcs = t.Result; FilterProcs(); }, TaskScheduler.FromCurrentSynchronizationContext());
+            .ContinueWith(t =>
+            {
+                if (t.IsFaulted) { Log.Error("process list", t.Exception); return; }
+                allProcs = t.Result;
+                FilterProcs();
+            }, TaskScheduler.FromCurrentSynchronizationContext());
     }
 
     void FilterProcs()
@@ -263,7 +272,9 @@ public partial class NewWatcherPage
         }
         if (editing is not null) await Engine.Current.Replace(w);
         else await Engine.Current.Add(w);
+        var win = Window.GetWindow(this); // before navigating away from this page
         App.ShowMain("main");
+        if (win is not null) Demo.Autoplay.AfterWatch(win);
     }
 
     /// <summary>The notification and condition fields onto <paramref name="w"/>.</summary>

@@ -41,7 +41,7 @@ PingWhen следит за процессом, окном, файлом или �
 | | |
 |---|---|
 | ![Новый наблюдатель для команды в Windows Terminal](docs/new-dark-ru.png) | ![История](docs/history-dark-ru.png) |
-| ![Агенты: команда MCP и хуки](docs/agents-light-ru.png) | ![Настройки: бот Telegram](docs/settings-light-ru.png) |
+| ![Агенты: команда MCP и хуки](docs/agents-light-ru.png) | ![Настройки: бот Telegram](docs/telegram-light-ru.png) |
 
 ## Скачать
 

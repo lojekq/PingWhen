@@ -97,6 +97,7 @@ public partial class PingSettingsView
             Show();
         }
         catch (TgError e) { Show(Telegram.Describe(e)); }
+        catch (Exception e) { Log.Warn("telegram", Telegram.Scrub(e)); Show(Telegram.Scrub(e.Message)); }
         finally { CheckButton.IsEnabled = true; }
     }
 
@@ -122,6 +123,7 @@ public partial class PingSettingsView
         }
         catch (OperationCanceledException) { error = DateTime.UtcNow >= pairUntil ? Loc.T("Tg.CodeExpired") : null; }
         catch (TgError e) { error = Telegram.Describe(e); }
+        catch (Exception e) { Log.Warn("telegram pairing", Telegram.Scrub(e)); error = Telegram.Scrub(e.Message); }
         finally
         {
             countdown.Stop();
@@ -159,6 +161,7 @@ public partial class PingSettingsView
             StatusText.Text = Loc.T("Tg.TestSent");
         }
         catch (TgError e) { Show(Telegram.Describe(e)); }
+        catch (Exception e) { Log.Warn("telegram", Telegram.Scrub(e)); Show(Telegram.Scrub(e.Message)); }
         finally { TestButton.IsEnabled = true; }
     }
 
@@ -176,5 +179,6 @@ public partial class PingSettingsView
             StatusText.Text = Loc.T("Tg.TestSent");
         }
         catch (TgError e) { Show(Telegram.Describe(e)); }
+        catch (Exception e) { Log.Warn("telegram", Telegram.Scrub(e)); Show(Telegram.Scrub(e.Message)); }
     }
 }

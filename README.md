@@ -41,7 +41,7 @@ Planned for v1.0: region watch with pixel diff and Windows OCR, screenshots in n
 | | |
 |---|---|
 | ![New watcher for a Windows Terminal command](docs/new-dark-en.png) | ![History](docs/history-dark-en.png) |
-| ![Agents: MCP command and hooks](docs/agents-light-en.png) | ![Settings: Telegram bot](docs/settings-light-en.png) |
+| ![Agents: MCP command and hooks](docs/agents-light-en.png) | ![Settings: Telegram bot](docs/telegram-light-en.png) |
 
 ## Download
 
