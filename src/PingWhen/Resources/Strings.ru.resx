@@ -261,4 +261,30 @@
   <data name="Channel.ntfy" xml:space="preserve"><value>ntfy</value></data>
   <data name="Channel.ntfy.queued" xml:space="preserve"><value>ntfy…</value></data>
   <data name="Channel.ntfy.failed" xml:space="preserve"><value>ntfy: не доставлено</value></data>
+  <data name="Cond.RegionUnchanged" xml:space="preserve"><value>Область перестанет меняться на {0} с</value></data>
+  <data name="Cond.RegionChanged" xml:space="preserve"><value>Область изменится</value></data>
+  <data name="Cond.RegionText" xml:space="preserve"><value>Текст в области содержит «{0}» (OCR)</value></data>
+  <data name="New.Cond.RegionUnchanged" xml:space="preserve"><value>Область перестанет меняться</value></data>
+  <data name="New.Cond.RegionChanged" xml:space="preserve"><value>Область изменится</value></data>
+  <data name="New.Cond.RegionText" xml:space="preserve"><value>В области появится текст (OCR)</value></data>
+  <data name="New.PickRegion" xml:space="preserve"><value>Выбрать область…</value></data>
+  <data name="New.RegionWhole" xml:space="preserve"><value>всё окно</value></data>
+  <data name="New.RegionPart" xml:space="preserve"><value>от {0}%, {1}% · {2}×{3}% окна</value></data>
+  <data name="New.Screenshot" xml:space="preserve"><value>Приложить скриншот окна</value></data>
+  <data name="New.Screenshot.Note" xml:space="preserve"><value>Снимок уйдёт в тост и через серверы Telegram или ntfy. JPEG до 300 КБ.</value></data>
+  <data name="Region.Title" xml:space="preserve"><value>Выбор области</value></data>
+  <data name="Region.Hint" xml:space="preserve"><value>Обведи мышью часть окна: прогресс-бар, проценты, надпись «Готово». Потом окно можно перекрыть другими, но не сворачивать.</value></data>
+  <data name="Region.Whole" xml:space="preserve"><value>Всё окно</value></data>
+  <data name="Region.Ok" xml:space="preserve"><value>Выбрать</value></data>
+  <data name="Region.NoFrame" xml:space="preserve"><value>Нет изображения окна: оно свёрнуто или защищено. Разверни его и попробуй ещё раз.</value></data>
+  <data name="Fire.RegionUnchanged" xml:space="preserve"><value>Область не меняется {0} с</value></data>
+  <data name="Fire.RegionChanged" xml:space="preserve"><value>Область изменилась</value></data>
+  <data name="Fire.RegionText" xml:space="preserve"><value>Найден текст: {0}</value></data>
+  <data name="Live.Minimized" xml:space="preserve"><value>окно свёрнуто — пауза</value></data>
+  <data name="Live.Black" xml:space="preserve"><value>чёрный кадр: защищённое содержимое?</value></data>
+  <data name="Live.NoCapture" xml:space="preserve"><value>это окно нельзя захватить</value></data>
+  <data name="Live.NoOcr" xml:space="preserve"><value>не установлен язык Windows OCR</value></data>
+  <data name="Live.WaitingChange" xml:space="preserve"><value>ждём изменений</value></data>
+  <data name="Live.Unchanged" xml:space="preserve"><value>не меняется {0}/{1} с</value></data>
+  <data name="Live.WatchingChange" xml:space="preserve"><value>следим за изменениями</value></data>
 </root>

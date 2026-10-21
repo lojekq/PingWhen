@@ -130,6 +130,8 @@ public static class WindowProbe
         return TopWindows.TitleOf(h);
     }
 
+    public static bool IsMinimized(long hwnd) => PInvoke.IsIconic((HWND)(nint)hwnd);
+
     /// <summary>Restore if minimized and bring to front ("Open window" on the toast).</summary>
     public static void Activate(long hwnd)
     {

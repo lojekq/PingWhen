@@ -4,8 +4,8 @@ using System.Text.Json.Serialization;
 
 namespace PingWhen.Features;
 
-public enum Kind { Process, Window, File, Quiet }
-public enum Until { Exited, Closed, TitleChanged, TitleMatches, StoppedGrowing, Appeared, Disappeared, Quiet, Flashed }
+public enum Kind { Process, Window, File, Quiet, Region }
+public enum Until { Exited, Closed, TitleChanged, TitleMatches, StoppedGrowing, Appeared, Disappeared, Quiet, Flashed, Unchanged, Changed, TextMatches }
 public enum Metric { Cpu, Gpu, Disk, Net }
 public enum Route { Auto, Pc, Phone, Both }
 public enum Priority { Low, Default, High }
@@ -56,6 +56,15 @@ public sealed class Watcher
     /// <summary>v1.0: "not done within X min" once, then keeps watching (catches stuck jobs).</summary>
     public int? DeadlineMinutes { get; set; }
     public bool DeadlineSent { get; set; }
+
+    /// <summary>v1.0 Region: fractions of the window frame; Pattern is the OCR text for TextMatches.</summary>
+    public double RegionX { get; set; }
+    public double RegionY { get; set; }
+    public double RegionW { get; set; } = 1;
+    public double RegionH { get; set; } = 1;
+    public Frames.Rect Region => new(RegionX, RegionY, RegionW, RegionH);
+    /// <summary>v1.0: a JPEG of the window (or region) goes with the notification. Off by default: it leaves the PC.</summary>
+    public bool Screenshot { get; set; }
 
     public static TimeSpan RepeatPause { get; internal set; } = TimeSpan.FromSeconds(60); // tests shorten it
 
@@ -156,6 +165,7 @@ public static class Describe
         Kind.Process => w.CommandLineContains ?? w.ProcessName ?? string.Join(", ", w.Processes.Select(p => $"{p.Name} ({p.Pid})")),
         Kind.Window => w.WindowTitle ?? "",
         Kind.File => w.Path ?? "",
+        Kind.Region => w.WindowTitle ?? "",
         _ => w.Processes.Count == 0 ? Shell.Loc.T("Target.System") : w.ProcessName ?? w.Processes[0].Name,
     };
 
@@ -174,6 +184,12 @@ public static class Describe
                 Until.TitleMatches => string.Format(T(w.IsRegex ? "Cond.TitleRegex" : "Cond.TitleContains"), w.Pattern),
                 Until.Flashed => T("Cond.Flashed"),
                 _ => T("Cond.Closed"),
+            },
+            Kind.Region => w.Until switch
+            {
+                Until.Changed => T("Cond.RegionChanged"),
+                Until.TextMatches => string.Format(T("Cond.RegionText"), w.Pattern),
+                _ => string.Format(T("Cond.RegionUnchanged"), w.QuietSeconds),
             },
             Kind.File => w.Until switch
             {

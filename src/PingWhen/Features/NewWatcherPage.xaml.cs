@@ -19,7 +19,7 @@ public sealed class NewRequest
 /// <summary>Target → condition → parameters → notification → Watch (spec §7, page 2).</summary>
 public partial class NewWatcherPage
 {
-    enum Cond { Closed, TitleChanged, TitleMatches, Flashed, Exited, Quiet, StoppedGrowing, Appeared, Disappeared }
+    enum Cond { Closed, TitleChanged, TitleMatches, Flashed, RegionUnchanged, RegionChanged, RegionText, Exited, Quiet, StoppedGrowing, Appeared, Disappeared }
     sealed record Choice<T>(T Value, string Text);
     sealed record Item(object Value, string Text, ImageSource? Icon);
     sealed record CmdItem(Terminals.Command? Cmd, string Text, SymbolRegular Symbol);
@@ -28,6 +28,7 @@ public partial class NewWatcherPage
     static NewWatcherPage? shown;
 
     Watcher? editing;
+    Frames.Rect region = new(0, 0, 1, 1);
     List<Item> allProcs = [];
 
     /// <summary>Shows the main window on this page; if it is already open, reloads it with the new request.</summary>
@@ -60,6 +61,12 @@ public partial class NewWatcherPage
         MetricBox.SelectionChanged += (_, _) => MetricChanged();
         FilePath.TextChanged += (_, _) => RefreshTitle();
         Browse.Click += (_, _) => BrowseFile();
+        PickRegion.Click += async (_, _) =>
+        {
+            var hwnd = editing?.Hwnd ?? SelectedWindow?.Hwnd ?? 0;
+            if (hwnd == 0 || Window.GetWindow(this) is not { } owner) return;
+            if (await RegionPicker.Pick(owner, hwnd, region) is { } r) { region = r; ShowRegion(); }
+        };
         WatchButton.Click += async (_, _) =>
         {
             try { await Watch(); }
@@ -93,6 +100,8 @@ public partial class NewWatcherPage
             KeepAwakeBox.IsChecked = w.KeepAwake;
             WaitChildrenBox.IsChecked = w.WaitChildren;
             RepeatBox.IsChecked = w.Repeat;
+            ScreenshotBox.IsChecked = w.Screenshot;
+            region = w.Region;
             DeadlineBox.IsChecked = w.DeadlineMinutes is not null;
             DeadlineMinutes.Value = w.DeadlineMinutes ?? 60;
             Pattern.Text = w.Pattern ?? "";
@@ -102,6 +111,7 @@ public partial class NewWatcherPage
             {
                 Kind.Window => w.Until switch { Until.TitleChanged => Cond.TitleChanged, Until.TitleMatches => Cond.TitleMatches, Until.Flashed => Cond.Flashed, _ => Cond.Closed },
                 Kind.File => w.Until switch { Until.Appeared => Cond.Appeared, Until.Disappeared => Cond.Disappeared, _ => Cond.StoppedGrowing },
+                Kind.Region => w.Until switch { Until.Changed => Cond.RegionChanged, Until.TextMatches => Cond.RegionText, _ => Cond.RegionUnchanged },
                 Kind.Quiet => Cond.Quiet,
                 _ => Cond.Exited,
             });
@@ -119,6 +129,8 @@ public partial class NewWatcherPage
         WaitChildrenBox.IsChecked = false;
         RepeatBox.IsChecked = false;
         DeadlineBox.IsChecked = false;
+        ScreenshotBox.IsChecked = false;
+        region = new(0, 0, 1, 1);
         RouteBox.SelectedIndex = 0;
         var kind = r.Kind ?? Kind.Window;
         (kind switch { Kind.Process => KindProcess, Kind.File => KindFile, Kind.Quiet => KindSystem, _ => KindWindow }).IsChecked = true;
@@ -195,11 +207,11 @@ public partial class NewWatcherPage
     void RefreshConditions(Cond? prefer = null)
     {
         Cond[] list = editing is { } w
-            ? w.Kind switch { Kind.Window => [Cond.Closed, Cond.TitleChanged, Cond.TitleMatches, Cond.Flashed], Kind.File => [Cond.StoppedGrowing, Cond.Appeared, Cond.Disappeared], Kind.Quiet => [Cond.Quiet], _ => [Cond.Exited] }
+            ? w.Kind switch { Kind.Window => [Cond.Closed, Cond.TitleChanged, Cond.TitleMatches, Cond.Flashed], Kind.Region => RegionConds(), Kind.File => [Cond.StoppedGrowing, Cond.Appeared, Cond.Disappeared], Kind.Quiet => [Cond.Quiet], _ => [Cond.Exited] }
             : SelectedKind switch
             {
                 Kind.Window when SelectedCommand is not null => [Cond.Exited, Cond.Quiet],
-                Kind.Window => [Cond.Closed, Cond.TitleChanged, Cond.TitleMatches, Cond.Flashed, Cond.Exited, Cond.Quiet],
+                Kind.Window => [Cond.Closed, Cond.TitleChanged, Cond.TitleMatches, Cond.Flashed, .. RegionConds(), Cond.Exited, Cond.Quiet],
                 Kind.Process => [Cond.Exited, Cond.Quiet],
                 Kind.File => [Cond.StoppedGrowing, Cond.Appeared, Cond.Disappeared],
                 _ => [Cond.Quiet],
@@ -210,14 +222,27 @@ public partial class NewWatcherPage
         RefreshParams();
     }
 
+    /// <summary>"Text matched" needs a Windows OCR language; without one only the pixel conditions are offered.</summary>
+    static Cond[] RegionConds() => RegionCapture.OcrAvailable ? [Cond.RegionUnchanged, Cond.RegionChanged, Cond.RegionText] : [Cond.RegionUnchanged, Cond.RegionChanged];
+
+    static bool IsRegion(Cond? c) => c is Cond.RegionUnchanged or Cond.RegionChanged or Cond.RegionText;
+
+    void ShowRegion() => RegionText.Text = region == new Frames.Rect(0, 0, 1, 1)
+        ? Loc.T("New.RegionWhole")
+        : string.Format(Loc.T("New.RegionPart"), (int)(region.X * 100), (int)(region.Y * 100), (int)(region.W * 100), (int)(region.H * 100));
+
     bool SystemTarget => editing is { } w ? w.Processes.Count == 0 : SelectedKind == Kind.Quiet;
 
     void RefreshParams()
     {
         var c = SelectedCond;
-        PatternPanel.Visibility = c == Cond.TitleMatches ? Visibility.Visible : Visibility.Collapsed;
+        PatternPanel.Visibility = c is Cond.TitleMatches or Cond.RegionText ? Visibility.Visible : Visibility.Collapsed;
+        RegionPanel.Visibility = IsRegion(c) ? Visibility.Visible : Visibility.Collapsed;
+        ShowRegion();
+        var hasWindow = editing is { } ew ? ew.Hwnd != 0 : SelectedKind == Kind.Window;
+        ScreenshotBox.Visibility = ScreenshotNote.Visibility = hasWindow ? Visibility.Visible : Visibility.Collapsed;
         MetricPanel.Visibility = AlreadyRunning.Visibility = c == Cond.Quiet ? Visibility.Visible : Visibility.Collapsed;
-        SecondsPanel.Visibility = c is Cond.Quiet or Cond.StoppedGrowing ? Visibility.Visible : Visibility.Collapsed;
+        SecondsPanel.Visibility = c is Cond.Quiet or Cond.StoppedGrowing or Cond.RegionUnchanged ? Visibility.Visible : Visibility.Collapsed;
         WaitChildrenBox.Visibility = c == Cond.Exited ? Visibility.Visible : Visibility.Collapsed;
         RepeatBox.Visibility = c == Cond.Closed ? Visibility.Collapsed : Visibility.Visible; // a closed window can't close again
         if (c == Cond.Quiet)
@@ -227,7 +252,7 @@ public partial class NewWatcherPage
             MetricBox.ItemsSource = metrics.Select(m => new Choice<Metric>(m, Fmt.MetricName(m))).ToList();
             MetricBox.SelectedIndex = Math.Max(0, Array.IndexOf(metrics, keep));
         }
-        else if (c == Cond.StoppedGrowing && editing is null) SecondsBox.Value = 30;
+        else if (c is Cond.StoppedGrowing or Cond.RegionUnchanged && editing is null) SecondsBox.Value = 30;
         RefreshTitle();
     }
 
@@ -291,17 +316,20 @@ public partial class NewWatcherPage
         w.Until = c switch
         {
             Cond.Closed => Until.Closed, Cond.TitleChanged => Until.TitleChanged, Cond.TitleMatches => Until.TitleMatches, Cond.Flashed => Until.Flashed,
+            Cond.RegionUnchanged => Until.Unchanged, Cond.RegionChanged => Until.Changed, Cond.RegionText => Until.TextMatches,
             Cond.StoppedGrowing => Until.StoppedGrowing, Cond.Appeared => Until.Appeared, Cond.Disappeared => Until.Disappeared,
             Cond.Quiet => Until.Quiet, _ => Until.Exited,
         };
-        if (c == Cond.TitleMatches)
+        if (c is Cond.TitleMatches or Cond.RegionText)
         {
             w.Pattern = Pattern.Text;
             w.IsRegex = IsRegex.IsChecked == true;
             if (w.Pattern.Length == 0) { error = Loc.T("New.Error.Pattern"); return false; }
             if (w.IsRegex && Conditions.RegexError(w.Pattern) is { } re) { error = re; return false; }
         }
-        if (c is Cond.Quiet or Cond.StoppedGrowing) w.QuietSeconds = (int)Math.Max(5, SecondsBox.Value ?? 30);
+        if (c is Cond.Quiet or Cond.StoppedGrowing or Cond.RegionUnchanged) w.QuietSeconds = (int)Math.Max(5, SecondsBox.Value ?? 30);
+        if (IsRegion(c)) (w.RegionX, w.RegionY, w.RegionW, w.RegionH) = (region.X, region.Y, region.W, region.H);
+        w.Screenshot = w.Hwnd != 0 && ScreenshotBox.IsChecked == true;
         if (c == Cond.Quiet)
         {
             w.Metric = SelectedMetric;
@@ -347,7 +375,8 @@ public partial class NewWatcherPage
                     w.WindowClass = win.Class;
                     w.WindowTitle = TopWindows.TitleOf(win.Hwnd);
                 }
-                w.Kind = c switch { Cond.Exited => Kind.Process, Cond.Quiet => Kind.Quiet, _ => Kind.Window };
+                w.Kind = c switch { Cond.Exited => Kind.Process, Cond.Quiet => Kind.Quiet, _ when IsRegion(c) => Kind.Region, _ => Kind.Window };
+                if (w.Kind == Kind.Region && SelectedCommand is not null) { error = Loc.T("New.Error.Window"); return null; }
                 break;
             case Kind.Process:
                 if (SelectedProc is not { } p) { error = Loc.T("New.Error.Process"); return null; }

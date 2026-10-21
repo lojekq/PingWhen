@@ -51,6 +51,25 @@ public static class Conditions
         _ => false,
     };
 
+    /// <summary>
+    /// Region (v1.0): frames arrive only when the window changes, so "unchanged for N s" is checked on the tick.
+    /// The first frame is the baseline; a frame differing from the last kept one by more than the threshold is a change.
+    /// </summary>
+    public record struct RegionState(byte[]? Base, byte[]? Last, bool ChangeSeen, long ChangedAt);
+
+    public static (RegionState, bool Changed) RegionFrame(RegionState s, byte[] gray, double threshold, long now)
+    {
+        if (s.Last is null) return (s with { Base = gray, Last = gray, ChangedAt = now }, false);
+        var changed = Frames.Diff(s.Last, gray) > threshold;
+        return (changed ? s with { Last = gray, ChangeSeen = true, ChangedAt = now } : s, changed);
+    }
+
+    /// <summary>Stopped changing: N s since the last change, once a change was seen (a static region alone never fires).</summary>
+    public static bool RegionUnchanged(RegionState s, int seconds, long now) => s.ChangeSeen && now - s.ChangedAt >= seconds * 1000L;
+
+    /// <summary>Changed: the current frame differs from the first one.</summary>
+    public static bool RegionChanged(RegionState s, byte[] gray, double threshold) => s.Base is not null && Frames.Diff(s.Base, gray) > threshold;
+
     /// <summary>Contains, ignoring case; or a regex with a 100 ms timeout (agents send patterns too). A timeout is no match.</summary>
     public static bool Matches(string text, string? pattern, bool isRegex)
     {

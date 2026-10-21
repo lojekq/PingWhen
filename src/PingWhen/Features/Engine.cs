@@ -32,6 +32,11 @@ public sealed class Engine
         public long LastFire = long.MinValue / 2;  // Repeat: at most one report per minute
         public bool WaitReset;                      // Repeat: the condition must clear before it can fire again
         public int Ticks;
+        // Region (v1.0)
+        public RegionCapture? Capture;
+        public Conditions.RegionState R;
+        public bool Black, OcrBusy;
+        public long CaptureTriedAt;
     }
 
     public static Engine Current { get; set; } = new();
@@ -78,6 +83,7 @@ public sealed class Engine
         {
             live.Remove(old);
             foreach (var h in old.Handles) h.Dispose();
+            old.Capture?.Dispose();
         }
         AddNow(w);
         return w;
@@ -92,6 +98,7 @@ public sealed class Engine
         {
             l.Q = l.Q with { BelowSince = null, LastAt = 0 };
             l.G = l.G with { StableSince = null, LastAt = 0 };
+            l.R = l.R with { ChangedAt = Environment.TickCount64 };
         }
     });
 
@@ -105,7 +112,7 @@ public sealed class Engine
             {
                 Kind.File => true,
                 Kind.Quiet when w.Processes.Count == 0 => true,
-                Kind.Window => Targets.Alive(w.Processes).Count == 1 && WindowProbe.Title(w.Hwnd, w.Processes[0].Pid, w.WindowClass) is not null,
+                Kind.Window or Kind.Region => Targets.Alive(w.Processes).Count == 1 && WindowProbe.Title(w.Hwnd, w.Processes[0].Pid, w.WindowClass) is not null,
                 _ => Reattach(w) || (w.Repeat && Repeatable(w)),
             };
             if (ok) AddNow(w);
@@ -151,6 +158,7 @@ public sealed class Engine
         live.Add(l);
         dirty = true;
         if (w.Kind == Kind.Process && !(w.Repeat && Repeatable(w))) CheckExited(l);
+        if (w.Kind == Kind.Region) StartCapture(l, Environment.TickCount64); // at once: the first changes may come before the tick
     }
 
     void Attach(Live l, ProcRef r)
@@ -236,6 +244,7 @@ public sealed class Engine
     {
         live.Remove(l);
         foreach (var h in l.Handles) h.Dispose();
+        l.Capture?.Dispose();
         dirty = true;
         Report(l.W, o, title, body, duration ?? Duration(l.W));
     }
@@ -313,6 +322,7 @@ public sealed class Engine
                 case Kind.Window: TickWindow(l); break;
                 case Kind.File: TickFile(l, now); break;
                 case Kind.Quiet: TickQuiet(l, tree, now); break;
+                case Kind.Region: TickRegion(l, now); break;
             }
         }
         if (tree is not null) metrics.ForgetProcesses(tree.All.Select(p => p.Pid));
@@ -416,6 +426,85 @@ public sealed class Engine
         if (!fired) return;
         Hit(l, Outcome.Done, done, string.Format(Loc.T("Fire.Stopped"), Fmt.Bytes(size)));
         l.G = new(size, false, null, 0); // repeat: wait for growth again
+    }
+
+    /// <summary>Region: the capture runs on its own; the tick checks the window and the "unchanged for N s" timer.</summary>
+    void TickRegion(Live l, long now)
+    {
+        var w = l.W;
+        var title = WindowProbe.Title(w.Hwnd, w.Processes.FirstOrDefault()?.Pid ?? 0, w.WindowClass);
+        if (title is null)
+        {
+            Finish(l, Outcome.Done, string.Format(Loc.T("Fire.Done"), w.Title, Fmt.Duration(Duration(w))), Loc.T("Fire.WindowClosed"));
+            return;
+        }
+        if (l.Capture is null && !StartCapture(l, now)) return;
+        if (WindowProbe.IsMinimized(w.Hwnd))
+        {
+            l.Text = Loc.T("Live.Minimized"); // no frames from a minimized window: pause, the timer does not run
+            l.R = l.R with { ChangedAt = now };
+            return;
+        }
+        if (w.Until == Until.Unchanged)
+        {
+            var quiet = l.R.ChangeSeen ? (now - l.R.ChangedAt) / 1000 : 0;
+            l.Progress = Math.Min(1, quiet / (double)w.QuietSeconds);
+            l.Text = l.Black ? Loc.T("Live.Black") : !l.R.ChangeSeen ? Loc.T("Live.WaitingChange") : string.Format(Loc.T("Live.Unchanged"), quiet, w.QuietSeconds);
+            if (!Conditions.RegionUnchanged(l.R, w.QuietSeconds, now)) return;
+            Hit(l, Outcome.Done, string.Format(Loc.T("Fire.Done"), w.Title, Fmt.Duration(Duration(w))), string.Format(Loc.T("Fire.RegionUnchanged"), w.QuietSeconds));
+            l.R = l.R with { ChangeSeen = false }; // repeat: wait for the next change
+        }
+        else if (l.Black) l.Text = Loc.T("Live.Black");
+        else if (w.Until == Until.Changed) l.Text = Loc.T("Live.WatchingChange");
+    }
+
+    /// <summary>Tried again every 10 s while it fails (the window may come back from a protected state).</summary>
+    bool StartCapture(Live l, long now)
+    {
+        if (now - l.CaptureTriedAt < 10_000) return false;
+        l.CaptureTriedAt = now;
+        l.Capture = RegionCapture.Start(l.W.Hwnd, (bgra, fw, fh) => Post(() => OnRegionFrame(l, bgra, fw, fh)));
+        if (l.Capture is null) l.Text = Loc.T("Live.NoCapture");
+        return l.Capture is not null;
+    }
+
+    void OnRegionFrame(Live l, byte[] bgra, int fw, int fh)
+    {
+        if (!live.Contains(l)) return;
+        var w = l.W;
+        var (gray, _) = Frames.Gray64(bgra, fw, fh, w.Region);
+        l.Black = Frames.IsBlack(gray);
+        var first = l.R.Last is null;
+        (l.R, var changed) = Conditions.RegionFrame(l.R, gray, Frames.DefaultThreshold, Environment.TickCount64);
+        if (w.Until == Until.Changed && Conditions.RegionChanged(l.R, gray, Frames.DefaultThreshold))
+        {
+            Hit(l, Outcome.Done, string.Format(Loc.T("Fire.Done"), w.Title, Fmt.Duration(Duration(w))), Loc.T("Fire.RegionChanged"));
+            l.R = l.R with { Base = gray }; // repeat: the next change is measured from here
+        }
+        if (w.Until == Until.TextMatches && (first || changed) && !l.OcrBusy)
+        {
+            l.OcrBusy = true; // OCR only on changed pixels, and off the engine loop
+            var region = w.Region;
+            Task.Run(async () =>
+            {
+                string? text = null;
+                try { text = await RegionCapture.Ocr(bgra, fw, fh, region); }
+                catch (Exception e) { Log.Warn("ocr", e); }
+                Post(() => OnOcr(l, text));
+            });
+        }
+    }
+
+    void OnOcr(Live l, string? text)
+    {
+        l.OcrBusy = false;
+        if (!live.Contains(l)) return;
+        var w = l.W;
+        if (text is null) { l.Text = Loc.T("Live.NoOcr"); return; }
+        l.Text = "OCR: " + Fmt.Cut(text.ReplaceLineEndings(" "), 60);
+        var match = Conditions.Matches(text, w.Pattern, w.IsRegex);
+        if (l.WaitReset) { if (!match) l.WaitReset = false; return; }
+        if (match) Hit(l, Outcome.Done, string.Format(Loc.T("Fire.Done"), w.Title, Fmt.Duration(Duration(w))), string.Format(Loc.T("Fire.RegionText"), Fmt.Cut(text.ReplaceLineEndings(" "), 200)));
     }
 
     void TickQuiet(Live l, ProcessTree? tree, long now)

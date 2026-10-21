@@ -73,12 +73,15 @@ namespace PingWhen.Features
 
         public static bool LooksLikeToken(string s) => TokenRx().IsMatch(s.Trim()) && !s.Trim().Contains(' ');
 
-        async Task<JsonElement> Call(string method, object body, TimeSpan timeout, CancellationToken ct = default)
+        Task<JsonElement> Call(string method, object body, TimeSpan timeout, CancellationToken ct = default) =>
+            Call(method, JsonContent.Create(body), timeout, ct);
+
+        async Task<JsonElement> Call(string method, HttpContent content, TimeSpan timeout, CancellationToken ct = default)
         {
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             cts.CancelAfter(timeout);
             HttpResponseMessage r;
-            try { r = await http.PostAsJsonAsync($"{Api}/bot{token}/{method}", body, cts.Token); }
+            try { r = await http.PostAsync($"{Api}/bot{token}/{method}", content, cts.Token); }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
             catch (Exception e) when (e is HttpRequestException or OperationCanceledException) { throw new TgError(0, Scrub(e.Message)); }
             using (r)
@@ -110,6 +113,23 @@ namespace PingWhen.Features
         /// <summary>Plain text, no parse_mode: window titles with &lt;, _ or * go as they are.</summary>
         public Task SendMessage(long chatId, string text, bool silent, CancellationToken ct = default) =>
             Call("sendMessage", new { chat_id = chatId, text = Fmt.Cut(text, MaxText), disable_notification = silent }, TimeSpan.FromSeconds(30), ct);
+
+        public const int MaxCaption = 1024;
+
+        /// <summary>v1.0: JPEG (≤ 10 MB upload) with a caption of at most 1024 characters, multipart.</summary>
+        public async Task SendPhoto(long chatId, byte[] jpeg, string caption, bool silent, CancellationToken ct = default)
+        {
+            using var form = new MultipartFormDataContent
+            {
+                { new StringContent(chatId.ToString(System.Globalization.CultureInfo.InvariantCulture)), "chat_id" },
+                { new StringContent(Fmt.Cut(caption, MaxCaption)), "caption" },
+                { new StringContent(silent ? "true" : "false"), "disable_notification" },
+            };
+            var file = new ByteArrayContent(jpeg);
+            file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+            form.Add(file, "photo", "pingwhen.jpg");
+            await Call("sendPhoto", form, TimeSpan.FromSeconds(90), ct);
+        }
 
         /// <summary>Text for the settings card.</summary>
         public static string Describe(TgError e) => e.Code switch

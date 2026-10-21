@@ -261,4 +261,30 @@ Process exited, code 0</value></data>
   <data name="Channel.ntfy" xml:space="preserve"><value>ntfy</value></data>
   <data name="Channel.ntfy.queued" xml:space="preserve"><value>ntfy…</value></data>
   <data name="Channel.ntfy.failed" xml:space="preserve"><value>ntfy: not delivered</value></data>
+  <data name="Cond.RegionUnchanged" xml:space="preserve"><value>Region stops changing for {0} s</value></data>
+  <data name="Cond.RegionChanged" xml:space="preserve"><value>Region changes</value></data>
+  <data name="Cond.RegionText" xml:space="preserve"><value>Region text contains "{0}" (OCR)</value></data>
+  <data name="New.Cond.RegionUnchanged" xml:space="preserve"><value>Region stops changing</value></data>
+  <data name="New.Cond.RegionChanged" xml:space="preserve"><value>Region changes</value></data>
+  <data name="New.Cond.RegionText" xml:space="preserve"><value>Text appears in the region (OCR)</value></data>
+  <data name="New.PickRegion" xml:space="preserve"><value>Select region…</value></data>
+  <data name="New.RegionWhole" xml:space="preserve"><value>the whole window</value></data>
+  <data name="New.RegionPart" xml:space="preserve"><value>from {0}%, {1}% · {2}×{3}% of the window</value></data>
+  <data name="New.Screenshot" xml:space="preserve"><value>Attach a screenshot of the window</value></data>
+  <data name="New.Screenshot.Note" xml:space="preserve"><value>The picture goes to the toast and through Telegram or ntfy servers. JPEG up to 300 KB.</value></data>
+  <data name="Region.Title" xml:space="preserve"><value>Select a region</value></data>
+  <data name="Region.Hint" xml:space="preserve"><value>Drag a rectangle over the part to watch: a progress bar, a percentage, a "Done" label. The window may be covered by others later, but not minimized.</value></data>
+  <data name="Region.Whole" xml:space="preserve"><value>Whole window</value></data>
+  <data name="Region.Ok" xml:space="preserve"><value>Use this region</value></data>
+  <data name="Region.NoFrame" xml:space="preserve"><value>No picture of this window: it may be minimized or protected. Restore it and try again.</value></data>
+  <data name="Fire.RegionUnchanged" xml:space="preserve"><value>The region has not changed for {0} s</value></data>
+  <data name="Fire.RegionChanged" xml:space="preserve"><value>The region changed</value></data>
+  <data name="Fire.RegionText" xml:space="preserve"><value>Text found: {0}</value></data>
+  <data name="Live.Minimized" xml:space="preserve"><value>window minimized: paused</value></data>
+  <data name="Live.Black" xml:space="preserve"><value>black picture: protected content?</value></data>
+  <data name="Live.NoCapture" xml:space="preserve"><value>this window cannot be captured</value></data>
+  <data name="Live.NoOcr" xml:space="preserve"><value>no Windows OCR language installed</value></data>
+  <data name="Live.WaitingChange" xml:space="preserve"><value>waiting for a change</value></data>
+  <data name="Live.Unchanged" xml:space="preserve"><value>unchanged {0}/{1} s</value></data>
+  <data name="Live.WatchingChange" xml:space="preserve"><value>watching for a change</value></data>
 </root>

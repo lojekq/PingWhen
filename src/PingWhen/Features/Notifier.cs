@@ -24,7 +24,7 @@ namespace PingWhen.Shell
 namespace PingWhen.Features
 {
     /// <summary>One notification on its way: from a watcher, an agent (notify, hook) or --notify.</summary>
-    public sealed record Note(string Title, string Body, Priority Priority = Priority.Default, Route Route = Route.Auto, long Hwnd = 0, string? HistoryId = null);
+    public sealed record Note(string Title, string Body, Priority Priority = Priority.Default, Route Route = Route.Auto, long Hwnd = 0, string? HistoryId = null, string? ImagePath = null);
 
     /// <summary>Which channels a note goes to (spec §5.5). Pure.</summary>
     public static class Router
@@ -160,13 +160,21 @@ namespace PingWhen.Features
                 {
                     var bot = new Telegram(token);
                     var chat = t.ChatId!.Value;
-                    list.Add(Channel("phone", (batch, ct) => { var (text, silent) = Outbox.Merge(batch); return bot.SendMessage(chat, text, silent, ct); }, Telegram.Describe));
+                    list.Add(Channel("phone", (batch, ct) =>
+                    {
+                        var (text, silent) = Outbox.Merge(batch);
+                        return batch is [{ ImagePath: { } img }] && File.Exists(img)
+                            ? bot.SendPhoto(chat, File.ReadAllBytes(img), text, silent, ct)
+                            : bot.SendMessage(chat, text, silent, ct);
+                    }, Telegram.Describe));
                 }
                 var n = Settings.Current.Ntfy;
                 if (n.Ready)
                 {
                     var ntfy = new Ntfy(n);
-                    list.Add(Channel("ntfy", (batch, ct) => batch.Count == 1
+                    list.Add(Channel("ntfy", (batch, ct) => batch is [{ ImagePath: { } img }] && File.Exists(img)
+                        ? ntfy.SendFile(File.ReadAllBytes(img), Path.GetFileName(img), batch[0].Title, batch[0].Body, ct)
+                        : batch.Count == 1
                         ? ntfy.Send(batch[0].Title, batch[0].Body, batch[0].Priority, ct)
                         : ntfy.Send($"{AppInfo.DisplayName} · {batch.Count}", Outbox.Merge(batch).Text, batch.Max(b => b.Priority), ct), Ntfy.Describe));
                 }
@@ -214,13 +222,44 @@ namespace PingWhen.Features
         public static void OnFired(Fire f)
         {
             var id = Guid.NewGuid().ToString("N")[..12];
-            var channels = "";
-            if (f.Outcome is not (Outcome.Lost or Outcome.Cancelled))
+            if (f.Outcome is Outcome.Lost or Outcome.Cancelled)
             {
-                var (pc, phone) = Deliver(new Note(f.Title, f.Body, Priority.Default, f.W.Route, f.W.Hwnd, id));
-                channels = Channels(pc, phone);
+                Record(new HistoryEntry(id, DateTime.UtcNow, f.W.Title, f.Title, f.Body, f.Outcome, "", f.Duration.TotalSeconds));
+                return;
             }
-            Record(new HistoryEntry(id, DateTime.UtcNow, f.W.Title, f.Title, f.Body, f.Outcome, channels, f.Duration.TotalSeconds));
+            var note = new Note(f.Title, f.Body, Priority.Default, f.W.Route, f.W.Hwnd, id);
+            if (f.W.Screenshot && f.W.Hwnd != 0)
+            {
+                _ = Task.Run(async () => // off the engine loop: a capture takes ~50 ms
+                {
+                    string? image = null;
+                    try { image = await Shot(f.W); } catch (Exception e) { Log.Warn("screenshot", e); }
+                    var (pc, phone) = Deliver(note with { ImagePath = image });
+                    Record(new HistoryEntry(id, DateTime.UtcNow, f.W.Title, f.Title, f.Body, f.Outcome, Channels(pc, phone), f.Duration.TotalSeconds));
+                });
+                return;
+            }
+            var (pc, phone) = Deliver(note);
+            Record(new HistoryEntry(id, DateTime.UtcNow, f.W.Title, f.Title, f.Body, f.Outcome, Channels(pc, phone), f.Duration.TotalSeconds));
+        }
+
+        /// <summary>JPEG ≤ 300 KB of the window (or its region) in %LOCALAPPDATA%\PingWhen\shots; kept 3 days, at most 100 MB.</summary>
+        static async Task<string?> Shot(Watcher w)
+        {
+            if (await RegionCapture.Snapshot(w.Hwnd, TimeSpan.FromSeconds(3)) is not { } s) return null; // minimized: no frame
+            var jpeg = RegionCapture.Jpeg(s.Bgra, s.Width, s.Height, w.Kind == Kind.Region ? w.Region : null);
+            var dir = Path.Combine(AppInfo.LocalDir, "shots");
+            Directory.CreateDirectory(dir);
+            long total = 0;
+            foreach (var old in new DirectoryInfo(dir).GetFiles("*.jpg").OrderByDescending(x => x.LastWriteTimeUtc))
+            {
+                total += old.Length;
+                if (old.LastWriteTimeUtc < DateTime.UtcNow.AddDays(-3) || total > 100L * 1024 * 1024)
+                    try { old.Delete(); } catch { }
+            }
+            var path = Path.Combine(dir, $"{DateTime.Now:yyyyMMdd-HHmmss}-{w.Id}.jpg");
+            await File.WriteAllBytesAsync(path, jpeg);
+            return path;
         }
 
         /// <summary>notify from an agent, a hook or --notify.</summary>
@@ -324,6 +363,7 @@ namespace PingWhen.Features
                 var xml = new Windows.Data.Xml.Dom.XmlDocument();
                 xml.LoadXml($"<toast launch=\"{(n.Hwnd != 0 ? $"hwnd={n.Hwnd}" : "history")}\"><visual><binding template=\"ToastGeneric\">" +
                             $"<text>{SecurityElement.Escape(Fmt.Cut(n.Title, 200))}</text><text>{SecurityElement.Escape(Fmt.Cut(n.Body, 400))}</text>" +
+                            (n.ImagePath is { } img ? $"<image placement=\"hero\" src=\"{SecurityElement.Escape(new Uri(img).AbsoluteUri)}\"/>" : "") +
                             $"</binding></visual>{open}</toast>");
                 var t = new ToastNotification(xml);
                 t.Activated += (_, a) => Application.Current?.Dispatcher.BeginInvoke(() => OnActivated((a as ToastActivatedEventArgs)?.Arguments));

@@ -85,6 +85,10 @@
                 <StackPanel>
                     <ui:TextBlock FontTypography="BodyStrong" Text="{l:T New.Condition}" Margin="0,0,0,8" />
                     <ComboBox x:Name="CondBox" HorizontalAlignment="Left" MinWidth="320" DisplayMemberPath="Text" />
+                    <StackPanel x:Name="RegionPanel" Orientation="Horizontal" Margin="0,8,0,0">
+                        <ui:Button x:Name="PickRegion" Content="{l:T New.PickRegion}" Icon="{ui:SymbolIcon SelectObject24}" />
+                        <ui:TextBlock x:Name="RegionText" Appearance="Secondary" VerticalAlignment="Center" Margin="12,0,0,0" />
+                    </StackPanel>
                     <StackPanel x:Name="PatternPanel" Orientation="Horizontal" Margin="0,8,0,0">
                         <ui:TextBox x:Name="Pattern" MinWidth="320" PlaceholderText="Done" />
                         <CheckBox x:Name="IsRegex" Content="{l:T New.Regex}" Margin="12,0,0,0" />
@@ -116,6 +120,8 @@
                     <CheckBox x:Name="KeepAwakeBox" Content="{l:T New.KeepAwake}" />
                     <CheckBox x:Name="WaitChildrenBox" Content="{l:T New.WaitChildren}" Margin="0,4,0,0" />
                     <CheckBox x:Name="RepeatBox" Content="{l:T New.Repeat}" Margin="0,4,0,0" />
+                    <CheckBox x:Name="ScreenshotBox" Content="{l:T New.Screenshot}" Margin="0,4,0,0" />
+                    <ui:TextBlock x:Name="ScreenshotNote" Text="{l:T New.Screenshot.Note}" FontTypography="Caption" Appearance="Tertiary" TextWrapping="Wrap" Margin="28,0,0,0" />
                     <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                         <CheckBox x:Name="DeadlineBox" Content="{l:T New.Deadline}" VerticalAlignment="Center" />
                         <ui:NumberBox x:Name="DeadlineMinutes" MinWidth="120" Minimum="1" Maximum="10080" MaxDecimalPlaces="0" SmallChange="5" Value="60" ClearButtonEnabled="False" Margin="8,0,0,0" />
