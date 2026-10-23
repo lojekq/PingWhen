@@ -31,9 +31,7 @@ public partial class App : Application
         base.OnStartup(e);
         var a = Args.Current;
         var fromCli = Cli.StartedByCli(); // first thing: the CLI closes the event as soon as the pipe answers
-        Crash.Install(this);
-        Settings.Load();
-        Loc.Apply(Settings.Current.Language);
+        Crash.Install(this); // Settings and Loc are already loaded in Program.Main
         RemoveData = RemovePingWhen; // before the installer: --uninstall calls it there
         // install, update, switch to the installed copy or uninstall: this process is done.
         // Not when an agent started the tray (--mcp, --hook, --notify): a dialog then would pop up in the middle of its work.
