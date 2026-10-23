@@ -279,7 +279,7 @@ public class McpTests
     [TestMethod]
     public async Task StdioRelayOfTheRealExe()
     {
-        if (Mutex.TryOpenExisting($@"Local\lojekq.{AppInfo.Name}", out var m)) { m.Dispose(); Assert.Inconclusive("a PingWhen tray is running"); }
+        if (Mutex.TryOpenExisting($@"Local\lojekq.{AppInfo.InstanceName}", out var m)) { m.Dispose(); Assert.Inconclusive("a dev PingWhen tray is running"); }
         var notes = new List<Note>();
         Notifier.Sink = n => { lock (notes) notes.Add(n); return (true, false); };
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));

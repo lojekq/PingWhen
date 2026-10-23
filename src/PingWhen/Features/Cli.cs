@@ -14,7 +14,7 @@ namespace PingWhen.Features;
 public static class Cli
 {
     /// <summary>Held while the CLI starts the tray: the tray then stays in the tray instead of opening its window.</summary>
-    public const string StartEvent = @"Local\lojekq.PingWhen.cli-start";
+    public static readonly string StartEvent = $@"Local\lojekq.{AppInfo.InstanceName}.cli-start";
 
     public static bool StartedByCli() => EventWaitHandle.TryOpenExisting(StartEvent, out var e) && e is not null && Dispose(e);
     static bool Dispose(IDisposable d) { d.Dispose(); return true; }
@@ -105,11 +105,16 @@ public static class Cli
         if (pipe is null)
         {
             using var started = new EventWaitHandle(false, EventResetMode.ManualReset, StartEvent);
-            if (!Mutex.TryOpenExisting($@"Local\lojekq.{AppInfo.Name}", out _))
+            if (!Mutex.TryOpenExisting($@"Local\lojekq.{AppInfo.InstanceName}", out _))
             {
-                var exe = File.Exists(Install.Exe) ? Install.Exe : AppInfo.ExePath; // the installed copy when there is one
-                Log.Info("tray not running, starting it through explorer.exe");
-                try { Process.Start(new ProcessStartInfo("explorer.exe", $"\"{exe}\"") { UseShellExecute = false }); }
+                Log.Info("tray not running, starting it");
+                try
+                {
+                    // A dev build (Debug, --data-dir) starts its own exe directly: explorer.exe would drop PINGWHEN_DATA_DIR
+                    // and the tray would come up as the real instance. The real one goes through explorer, from the installed copy.
+                    if (AppInfo.IsDev) Process.Start(new ProcessStartInfo(AppInfo.ExePath) { UseShellExecute = false });
+                    else Process.Start(new ProcessStartInfo("explorer.exe", $"\"{(File.Exists(Install.Exe) ? Install.Exe : AppInfo.ExePath)}\"") { UseShellExecute = false });
+                }
                 catch (Exception e) { return Fail($"PingWhen: could not start the tray: {e.Message}"); }
             }
             pipe = TryConnect((int)wait.TotalMilliseconds);

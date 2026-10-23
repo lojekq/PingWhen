@@ -335,7 +335,7 @@ namespace PingWhen.Features
     /// </summary>
     public static class Toast
     {
-        public const string Aumid = "PingWhen";
+        public static readonly string Aumid = AppInfo.InstanceName; // "PingWhen"; dev builds have their own toast identity
         static readonly List<ToastNotification> Alive = []; // keep the objects: Activated is lost with them
         static ToastNotifier? notifier;
 

@@ -42,7 +42,7 @@ public sealed class AgentSession(Hello hello) : INotifyPropertyChanged
 /// </summary>
 public static class PipeServer
 {
-    public static string Name { get; } = $"{AppInfo.Name}-{WindowsIdentity.GetCurrent().User!.Value}";
+    public static string Name { get; } = $"{AppInfo.InstanceName}-{WindowsIdentity.GetCurrent().User!.Value}"; // dev builds: their own pipe
     public static ObservableCollection<AgentSession> Sessions { get; } = [];
     public static bool Running { get; private set; }
 

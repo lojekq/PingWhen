@@ -7,8 +7,9 @@ namespace PingWhen.Features;
 /// <summary>Connect Claude Code (and other MCP clients): exact command and hooks JSON with the real exe path (spec §7, page 4).</summary>
 public partial class AgentsPage
 {
-    /// <summary>The installed exe (%LOCALAPPDATA%\Programs\PingWhen\PingWhen.exe), whatever copy runs now; --demo shows a neutral path.</summary>
-    public static string ExeForCommands => Args.Current.Demo ? @"C:\Users\demo\AppData\Local\Programs\PingWhen\PingWhen.exe" : Install.Exe;
+    /// <summary>The installed exe (%LOCALAPPDATA%\Programs\PingWhen\PingWhen.exe), whatever copy runs now; a dev build shows itself
+    /// (agents pointed at the installed exe would talk to the real tray); --demo shows a neutral path.</summary>
+    public static string ExeForCommands => Args.Current.Demo ? @"C:\Users\demo\AppData\Local\Programs\PingWhen\PingWhen.exe" : AppInfo.IsDev ? AppInfo.ExePath : Install.Exe;
 
     public static string McpText(string exe) =>
         $"claude mcp add --scope user --transport stdio pingwhen -- \"{exe}\" --mcp\r\nclaude mcp list";
